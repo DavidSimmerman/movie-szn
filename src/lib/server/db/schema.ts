@@ -1,3 +1,164 @@
-// Drizzle schema — populated in M1.
-// Keeping this empty file exported so `import * as schema` in db/index.ts resolves during M0.
-export {};
+import { sql } from 'drizzle-orm';
+import {
+	check,
+	date,
+	index,
+	integer,
+	jsonb,
+	numeric,
+	pgEnum,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid
+} from 'drizzle-orm/pg-core';
+
+export const mediaType = pgEnum('media_type', ['movie', 'show']);
+export const suggestionStatus = pgEnum('suggestion_status', [
+	'pending',
+	'watching',
+	'added',
+	'declined'
+]);
+
+export const movies = pgTable(
+	'movies',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		slug: text('slug').notNull().unique(),
+		title: text('title').notNull(),
+		year: integer('year').notNull(),
+		type: mediaType('type').notNull(),
+		tmdbId: integer('tmdb_id').unique(),
+		imdbId: text('imdb_id').unique(),
+		overview: text('overview'),
+		runtimeMinutes: integer('runtime_minutes'),
+		posterUrl: text('poster_url'),
+		backdropUrl: text('backdrop_url'),
+		metadata: jsonb('metadata'),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [index('movies_year_idx').on(t.year), index('movies_type_idx').on(t.type)]
+);
+
+export const reviews = pgTable(
+	'reviews',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		movieId: uuid('movie_id')
+			.notNull()
+			.references(() => movies.id, { onDelete: 'cascade' }),
+		production: numeric('production', { precision: 3, scale: 2 }).notNull(),
+		storyPlot: numeric('story_plot', { precision: 3, scale: 2 }).notNull(),
+		misc: numeric('misc', { precision: 3, scale: 2 }).notNull(),
+		daveFactor: numeric('dave_factor', { precision: 3, scale: 2 }).notNull(),
+		combinedScore: numeric('combined_score', {
+			precision: 4,
+			scale: 2
+		}).generatedAlwaysAs(sql`((production + story_plot + misc + dave_factor) / 4.0 * 2.0)`),
+		notes: text('notes').notNull().default(''),
+		watchedAt: date('watched_at'),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [
+		uniqueIndex('reviews_movie_unique').on(t.movieId),
+		check(
+			'reviews_ratings_range',
+			sql`${t.production} BETWEEN 0 AND 6
+				AND ${t.storyPlot} BETWEEN 0 AND 6
+				AND ${t.misc} BETWEEN 0 AND 6
+				AND ${t.daveFactor} BETWEEN 0 AND 6`
+		)
+	]
+);
+
+export const seasons = pgTable('seasons', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	slug: text('slug').notNull().unique(),
+	name: text('name').notNull(),
+	startsAt: date('starts_at').notNull(),
+	endsAt: date('ends_at').notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+export const movieSeasons = pgTable(
+	'movie_seasons',
+	{
+		movieId: uuid('movie_id')
+			.notNull()
+			.references(() => movies.id, { onDelete: 'cascade' }),
+		seasonId: uuid('season_id')
+			.notNull()
+			.references(() => seasons.id, { onDelete: 'cascade' }),
+		addedAt: timestamp('added_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [primaryKey({ columns: [t.movieId, t.seasonId] })]
+);
+
+export const watchList = pgTable(
+	'watch_list',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		movieId: uuid('movie_id')
+			.notNull()
+			.unique()
+			.references(() => movies.id, { onDelete: 'cascade' }),
+		position: integer('position').notNull(),
+		notes: text('notes'),
+		addedAt: timestamp('added_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [index('watch_list_position_idx').on(t.position)]
+);
+
+export const suggestions = pgTable('suggestions', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	title: text('title').notNull(),
+	year: integer('year'),
+	imdbUrl: text('imdb_url'),
+	submitterName: text('submitter_name'),
+	status: suggestionStatus('status').notNull().default('pending'),
+	resolvedMovieId: uuid('resolved_movie_id').references(() => movies.id, { onDelete: 'set null' }),
+	voteCount: integer('vote_count').notNull().default(0),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+export const suggestionVotes = pgTable(
+	'suggestion_votes',
+	{
+		suggestionId: uuid('suggestion_id')
+			.notNull()
+			.references(() => suggestions.id, { onDelete: 'cascade' }),
+		voterHash: text('voter_hash').notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [primaryKey({ columns: [t.suggestionId, t.voterHash] })]
+);
+
+export const sessions = pgTable('sessions', {
+	id: text('id').primaryKey(),
+	expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+export const rateLimits = pgTable(
+	'rate_limits',
+	{
+		bucket: text('bucket').notNull(),
+		windowStart: timestamp('window_start', { withTimezone: true }).notNull(),
+		count: integer('count').notNull().default(0)
+	},
+	(t) => [primaryKey({ columns: [t.bucket, t.windowStart] })]
+);
+
+export type Movie = typeof movies.$inferSelect;
+export type NewMovie = typeof movies.$inferInsert;
+export type Review = typeof reviews.$inferSelect;
+export type NewReview = typeof reviews.$inferInsert;
+export type Season = typeof seasons.$inferSelect;
+export type NewSeason = typeof seasons.$inferInsert;
+export type WatchListEntry = typeof watchList.$inferSelect;
+export type Suggestion = typeof suggestions.$inferSelect;
+export type SuggestionVote = typeof suggestionVotes.$inferSelect;
