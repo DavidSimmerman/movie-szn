@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-	combinedScore,
-	formatScore,
-	isFlex,
-	scoreTier,
-	toBreakdown,
-	toNumber
-} from './ratings';
+import { combinedScore, formatScore, isFlex, scoreTier, toBreakdown, toNumber } from './ratings';
 
 describe('combinedScore', () => {
 	it('averages all four categories × 2', () => {
@@ -14,15 +7,11 @@ describe('combinedScore', () => {
 	});
 
 	it('handles fractional ratings', () => {
-		expect(
-			combinedScore({ production: 4.5, storyPlot: 4, misc: 5, daveFactor: 4.5 })
-		).toBe(9);
+		expect(combinedScore({ production: 4.5, storyPlot: 4, misc: 5, daveFactor: 4.5 })).toBe(9);
 	});
 
 	it('matches the plan example (4.5 + 4 + 5 + 6)', () => {
-		expect(
-			combinedScore({ production: 4.5, storyPlot: 4, misc: 5, daveFactor: 6 })
-		).toBe(9.75);
+		expect(combinedScore({ production: 4.5, storyPlot: 4, misc: 5, daveFactor: 6 })).toBe(9.75);
 	});
 
 	it('caps out at 12 for four 6/5 ratings (the flex)', () => {

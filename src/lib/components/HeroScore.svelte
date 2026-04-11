@@ -19,7 +19,7 @@
 			class="text-display text-[clamp(5rem,15vw,9rem)] leading-none"
 			class:text-[color:var(--color-gold)]={flex}
 		>
-			{intPart}<span class="text-[0.45em] align-super">.{decPart}</span>
+			{intPart}<span class="align-super text-[0.45em]">.{decPart}</span>
 		</span>
 		<span class="text-mono text-lg text-[color:var(--color-muted)]">/ 10</span>
 		{#if flex}
@@ -30,7 +30,9 @@
 			</span>
 		{/if}
 	</div>
-	<div class="mt-2 h-[3px] w-full max-w-md overflow-visible rounded-full bg-[color:var(--color-surface-2)]">
+	<div
+		class="mt-2 h-[3px] w-full max-w-md overflow-visible rounded-full bg-[color:var(--color-surface-2)]"
+	>
 		<div
 			class="h-full rounded-full"
 			class:bg-[color:var(--color-accent)]={tier !== 'flex' && tier !== 'peak'}

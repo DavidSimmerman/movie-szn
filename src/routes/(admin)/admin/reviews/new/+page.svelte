@@ -34,9 +34,7 @@
 		<img src={data.movie.posterUrl} alt="" class="h-48 w-32 rounded object-cover" />
 	{/if}
 	<div class="flex-1">
-		<p
-			class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-accent)] uppercase"
-		>
+		<p class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-accent)] uppercase">
 			{data.editing ? '◦ edit review ◦' : '◦ new review ◦'}
 		</p>
 		<h1 class="text-display mt-1 text-5xl italic">{data.movie.title}</h1>
@@ -58,10 +56,7 @@
 			>
 				live score
 			</p>
-			<p
-				class="text-display text-6xl tabular-nums"
-				class:text-[color:var(--color-gold)]={flex}
-			>
+			<p class="text-display text-6xl tabular-nums" class:text-[color:var(--color-gold)]={flex}>
 				{formatScore(score)}
 			</p>
 			<p class="text-mono text-sm text-[color:var(--color-muted)]">/ 10</p>
@@ -73,7 +68,9 @@
 				</span>
 			{/if}
 		</div>
-		<div class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6">
+		<div
+			class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
+		>
 			<RatingFilmstrip {ratings} />
 		</div>
 	</section>
@@ -82,9 +79,7 @@
 		{#each CATEGORY_KEYS as key (key)}
 			<label class="block">
 				<div class="mb-2 flex items-baseline justify-between">
-					<span
-						class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
-					>
+					<span class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase">
 						{CATEGORY_LABELS[key]}
 					</span>
 					<span
@@ -102,7 +97,9 @@
 					bind:value={$form[key]}
 					class="w-full accent-[color:var(--color-accent)]"
 				/>
-				<div class="text-mono mt-1 flex justify-between text-[0.6rem] text-[color:var(--color-muted)]">
+				<div
+					class="text-mono mt-1 flex justify-between text-[0.6rem] text-[color:var(--color-muted)]"
+				>
 					<span>0</span>
 					<span>2.5</span>
 					<span>5</span>

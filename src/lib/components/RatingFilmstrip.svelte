@@ -39,7 +39,9 @@
 					>
 						<div
 							class="absolute inset-0 origin-bottom transition-transform duration-500"
-							style="transform: scaleY({fill}); background: {isBonus ? 'var(--color-gold)' : 'var(--color-accent)'};"
+							style="transform: scaleY({fill}); background: {isBonus
+								? 'var(--color-gold)'
+								: 'var(--color-accent)'};"
 						></div>
 						<div
 							class="absolute top-[2px] left-[2px] h-[3px] w-[3px] rounded-full bg-[color:var(--color-bg)]/60"

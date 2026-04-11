@@ -15,15 +15,8 @@
 
 <main class="relative min-h-dvh">
 	{#if data.movie.backdropUrl}
-		<div
-			class="absolute inset-x-0 top-0 h-[70vh] overflow-hidden"
-			aria-hidden="true"
-		>
-			<img
-				src={data.movie.backdropUrl}
-				alt=""
-				class="h-full w-full object-cover opacity-40"
-			/>
+		<div class="absolute inset-x-0 top-0 h-[70vh] overflow-hidden" aria-hidden="true">
+			<img src={data.movie.backdropUrl} alt="" class="h-full w-full object-cover opacity-40" />
 			<div
 				class="absolute inset-0"
 				style="background: linear-gradient(180deg, transparent 0%, var(--color-bg) 85%);"
@@ -45,7 +38,9 @@
 			<a href="/" class="text-display text-lg italic">
 				movie<span class="text-[color:var(--color-accent)]">-</span>szn
 			</a>
-			<nav class="text-mono flex gap-6 text-xs tracking-wider text-[color:var(--color-muted)] uppercase">
+			<nav
+				class="text-mono flex gap-6 text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
+			>
 				<a class="transition hover:text-[color:var(--color-text)]" href="/reviews">reviews</a>
 				<a class="transition hover:text-[color:var(--color-text)]" href="/watchlist">watchlist</a>
 				<a class="transition hover:text-[color:var(--color-text)]" href="/suggest">suggest</a>
@@ -57,7 +52,7 @@
 				<img
 					src={data.movie.posterUrl}
 					alt={data.movie.title}
-					class="w-56 rounded-[var(--radius-card)] border border-[color:var(--color-border)] shadow-bulb md:w-72"
+					class="shadow-bulb w-56 rounded-[var(--radius-card)] border border-[color:var(--color-border)] md:w-72"
 				/>
 			{/if}
 
@@ -71,7 +66,8 @@
 					{data.movie.title}
 				</h1>
 				<p class="text-mono mt-3 text-sm text-[color:var(--color-muted)]">
-					{data.movie.year} · {data.movie.type}{#if data.movie.runtimeMinutes} · {data.movie.runtimeMinutes}m{/if}
+					{data.movie.year} · {data.movie.type}{#if data.movie.runtimeMinutes}
+						· {data.movie.runtimeMinutes}m{/if}
 				</p>
 
 				<div class="mt-8">
@@ -104,7 +100,9 @@
 				>
 					◦ notes ◦
 				</p>
-				<div class="prose text-lg leading-relaxed whitespace-pre-wrap text-[color:var(--color-text)]">
+				<div
+					class="prose text-lg leading-relaxed whitespace-pre-wrap text-[color:var(--color-text)]"
+				>
 					{data.review.notes}
 				</div>
 			</section>

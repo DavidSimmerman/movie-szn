@@ -103,9 +103,7 @@ export async function fetchTmdbDetails(
 	};
 
 	const runtimeMinutes =
-		type === 'movie'
-			? (d.runtime ?? null)
-			: (d.episode_run_time && d.episode_run_time[0]) || null;
+		type === 'movie' ? (d.runtime ?? null) : (d.episode_run_time && d.episode_run_time[0]) || null;
 
 	return {
 		id: d.id,
