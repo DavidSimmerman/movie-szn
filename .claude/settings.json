@@ -1,0 +1,20 @@
+{
+	"$schema": "https://claude.ai/schemas/project-settings.json",
+	"_comment": "MCP servers for this project. Run `claude mcp add` or edit this file, then restart Claude Code. Playwright is for visual/e2e testing the cinematic UI. Postgres is a read-only peek into local dev data — never point it at prod.",
+	"mcpServers": {
+		"playwright": {
+			"command": "npx",
+			"args": ["-y", "@playwright/mcp@latest"],
+			"description": "Browser automation for iterating on the cinematic UI. Use to drive the admin review-creation flow end-to-end while building."
+		},
+		"postgres": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-postgres",
+				"postgres://dave:dev@localhost:5432/moviereviews"
+			],
+			"description": "Read-only peek into the local dev DB. Handy for 'show me the current watch list order' without writing scripts. NEVER change this URL to a prod connection string."
+		}
+	}
+}
