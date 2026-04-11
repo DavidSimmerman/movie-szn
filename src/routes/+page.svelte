@@ -1,5 +1,7 @@
 <script lang="ts">
 	import PosterCard from '$lib/components/PosterCard.svelte';
+	import ProjectorTitle from '$lib/components/ProjectorTitle.svelte';
+	import SeasonMarquee from '$lib/components/SeasonMarquee.svelte';
 	import { toNumber } from '$lib/ratings';
 
 	let { data } = $props();
@@ -27,24 +29,31 @@
 				<a class="transition hover:text-[color:var(--color-text)]" href="/reviews">reviews</a>
 				<a class="transition hover:text-[color:var(--color-text)]" href="/watchlist">watchlist</a>
 				<a class="transition hover:text-[color:var(--color-text)]" href="/suggest">suggest</a>
+				<a class="transition hover:text-[color:var(--color-text)]" href="/seasons">seasons</a>
 			</nav>
 		</header>
 
 		<section class="flex flex-1 flex-col justify-center py-16">
 			<p class="text-mono mb-6 text-xs tracking-[0.4em] text-[color:var(--color-accent)] uppercase">
-				a dave joint · movie season {year}
+				a dave joint · {data.currentSeason?.name ?? `movie season ${year}`}
 			</p>
 			<h1 class="text-display text-[clamp(4rem,14vw,12rem)] leading-[0.85] italic">
-				movie<span class="text-[color:var(--color-accent)]">-</span>szn
+				<ProjectorTitle text="movie-szn" accent="-" />
 			</h1>
 			<p class="mt-6 max-w-xl text-lg text-[color:var(--color-muted)]">
 				four scores. one verdict. and a standing ovation reserved for the
 				<span class="text-[color:var(--color-gold)] italic">12/10</span>.
 			</p>
 		</section>
+	</div>
 
+	{#if data.currentSeason && data.seasonMovies.length > 0}
+		<SeasonMarquee seasonName={data.currentSeason.name} items={data.seasonMovies} />
+	{/if}
+
+	<div class="relative mx-auto max-w-[72rem] px-6 py-16">
 		{#if data.latest.length > 0}
-			<section class="mb-12">
+			<section>
 				<p
 					class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
 				>
@@ -63,7 +72,7 @@
 				</div>
 			</section>
 		{:else}
-			<section class="mb-12">
+			<section>
 				<p
 					class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
 				>
@@ -76,10 +85,10 @@
 		{/if}
 
 		<footer
-			class="text-mono mt-auto flex items-center justify-between border-t border-[color:var(--color-border)] pt-6 text-xs text-[color:var(--color-muted)]"
+			class="text-mono mt-16 flex items-center justify-between border-t border-[color:var(--color-border)] pt-6 text-xs text-[color:var(--color-muted)]"
 		>
 			<span>© {year} dave</span>
-			<span>m2 · vertical slice</span>
+			<a href="/rss.xml" class="hover:text-[color:var(--color-text)]">rss</a>
 		</footer>
 	</div>
 </main>
