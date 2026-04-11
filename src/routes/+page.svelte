@@ -1,4 +1,8 @@
 <script lang="ts">
+	import PosterCard from '$lib/components/PosterCard.svelte';
+	import { toNumber } from '$lib/ratings';
+
+	let { data } = $props();
 	const year = new Date().getFullYear();
 </script>
 
@@ -26,7 +30,7 @@
 			</nav>
 		</header>
 
-		<section class="flex flex-1 flex-col justify-center">
+		<section class="flex flex-1 flex-col justify-center py-16">
 			<p class="text-mono mb-6 text-xs tracking-[0.4em] text-[color:var(--color-accent)] uppercase">
 				a dave joint · movie season {year}
 			</p>
@@ -35,38 +39,47 @@
 			</h1>
 			<p class="mt-6 max-w-xl text-lg text-[color:var(--color-muted)]">
 				four scores. one verdict. and a standing ovation reserved for the
-				<span class="text-[color:var(--color-gold)] italic">12/10</span>. coming very soon.
+				<span class="text-[color:var(--color-gold)] italic">12/10</span>.
 			</p>
-
-			<div class="mt-12 flex gap-4 text-sm">
-				<span
-					class="text-mono rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2 text-[color:var(--color-muted)] uppercase"
-				>
-					production
-				</span>
-				<span
-					class="text-mono rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2 text-[color:var(--color-muted)] uppercase"
-				>
-					story
-				</span>
-				<span
-					class="text-mono rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-2 text-[color:var(--color-muted)] uppercase"
-				>
-					misc
-				</span>
-				<span
-					class="text-mono rounded-full border border-[color:var(--color-accent-2)]/40 bg-[color:var(--color-surface)] px-4 py-2 text-[color:var(--color-accent)] uppercase"
-				>
-					dave factor
-				</span>
-			</div>
 		</section>
 
+		{#if data.latest.length > 0}
+			<section class="mb-12">
+				<p
+					class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+				>
+					◦ latest reviews ◦
+				</p>
+				<div class="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+					{#each data.latest as r (r.id)}
+						<PosterCard
+							title={r.title}
+							year={r.year}
+							slug={r.slug}
+							posterUrl={r.posterUrl}
+							score={toNumber(r.combinedScore)}
+						/>
+					{/each}
+				</div>
+			</section>
+		{:else}
+			<section class="mb-12">
+				<p
+					class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+				>
+					◦ coming soon ◦
+				</p>
+				<p class="text-[color:var(--color-muted)]">
+					no reviews yet. check back when the lights go down.
+				</p>
+			</section>
+		{/if}
+
 		<footer
-			class="text-mono flex items-center justify-between text-xs text-[color:var(--color-muted)]"
+			class="text-mono mt-auto flex items-center justify-between border-t border-[color:var(--color-border)] pt-6 text-xs text-[color:var(--color-muted)]"
 		>
 			<span>© {year} dave</span>
-			<span>m0 · it's alive</span>
+			<span>m2 · vertical slice</span>
 		</footer>
 	</div>
 </main>
