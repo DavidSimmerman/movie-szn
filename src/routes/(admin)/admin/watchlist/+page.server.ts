@@ -3,9 +3,15 @@ import { and, asc, eq, gt, lt, max } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$server/db';
 import { movies, watchList } from '$db/schema';
+import { upsertMovieFromTmdb } from '$server/movies';
 import type { Actions, PageServerLoad } from './$types';
 
 const GAP = 1000;
+
+async function nextPosition() {
+	const [row] = await db!.select({ m: max(watchList.position) }).from(watchList);
+	return (row?.m ?? 0) + GAP;
+}
 
 export const load: PageServerLoad = async () => {
 	if (!db) return { items: [], candidates: [] };
@@ -56,8 +62,7 @@ export const actions: Actions = {
 			.safeParse({ movieId: body.get('movieId'), notes: body.get('notes') ?? '' });
 		if (!parsed.success) return fail(400);
 
-		const [maxRow] = await db.select({ m: max(watchList.position) }).from(watchList);
-		const nextPos = (maxRow?.m ?? 0) + GAP;
+		const nextPos = await nextPosition();
 		await db
 			.insert(watchList)
 			.values({
@@ -69,12 +74,79 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
+	addFromTmdb: async ({ request }) => {
+		if (!db) return fail(503, { error: 'database not configured' });
+		const body = await request.formData();
+		const parsed = z
+			.object({
+				tmdbId: z.coerce.number().int().positive(),
+				type: z.enum(['movie', 'show']),
+				notes: z.string().optional()
+			})
+			.safeParse({
+				tmdbId: body.get('tmdbId'),
+				type: body.get('type'),
+				notes: body.get('notes') ?? ''
+			});
+		if (!parsed.success) return fail(400, { error: 'invalid input' });
+
+		let movie;
+		try {
+			movie = await upsertMovieFromTmdb(parsed.data.tmdbId, parsed.data.type);
+		} catch (err) {
+			return fail(502, { error: err instanceof Error ? err.message : 'tmdb fetch failed' });
+		}
+
+		const nextPos = await nextPosition();
+		await db
+			.insert(watchList)
+			.values({
+				movieId: movie.id,
+				position: nextPos,
+				notes: parsed.data.notes?.trim() || null
+			})
+			.onConflictDoNothing();
+
+		return { ok: true };
+	},
+
 	remove: async ({ request }) => {
 		if (!db) return fail(503);
 		const body = await request.formData();
 		const id = body.get('id');
 		if (typeof id !== 'string') return fail(400);
 		await db.delete(watchList).where(eq(watchList.id, id));
+		return { ok: true };
+	},
+
+	reorder: async ({ request }) => {
+		if (!db) return fail(503);
+		const body = await request.formData();
+		const idsRaw = body.get('ids');
+		if (typeof idsRaw !== 'string') return fail(400, { error: 'missing ids' });
+
+		const ids = idsRaw.split(',').filter(Boolean);
+		const parsed = z.array(z.uuid()).min(1).safeParse(ids);
+		if (!parsed.success) return fail(400, { error: 'invalid ids' });
+
+		const existing = await db.select({ id: watchList.id }).from(watchList);
+		const existingIds = new Set(existing.map((r) => r.id));
+		if (parsed.data.length !== existingIds.size) {
+			return fail(400, { error: 'id count mismatch' });
+		}
+		for (const id of parsed.data) {
+			if (!existingIds.has(id)) return fail(400, { error: 'unknown id' });
+		}
+
+		await db.transaction(async (tx) => {
+			for (let i = 0; i < parsed.data.length; i++) {
+				await tx
+					.update(watchList)
+					.set({ position: (i + 1) * GAP })
+					.where(eq(watchList.id, parsed.data[i]));
+			}
+		});
+
 		return { ok: true };
 	},
 

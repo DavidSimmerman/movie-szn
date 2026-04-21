@@ -8,9 +8,9 @@ import type { Actions, PageServerLoad } from './$types';
 
 const createSchema = z.object({
 	year: z.coerce.number().int().min(1900).max(2100),
-	name: z.string().optional(),
-	startsAt: z.string().optional(),
-	endsAt: z.string().optional()
+	name: z.string().nullish(),
+	startsAt: z.string().nullish(),
+	endsAt: z.string().nullish()
 });
 
 export const load: PageServerLoad = async () => {

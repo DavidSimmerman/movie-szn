@@ -1,6 +1,7 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 import { SESSION_COOKIE, validateSession } from '$server/auth';
 import { ensureVisitorId } from '$server/visitor';
+import '$server/og-schedule';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.visitorId = ensureVisitorId(event.cookies);

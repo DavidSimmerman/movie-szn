@@ -1,11 +1,12 @@
-import { desc, eq } from 'drizzle-orm';
+import { count, desc, eq } from 'drizzle-orm';
 import { db } from '$server/db';
 import { movies, movieSeasons, reviews } from '$db/schema';
 import { currentSeason } from '$server/seasons';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	if (!db) return { latest: [], currentSeason: null, seasonMovies: [] };
+	if (!db)
+		return { latest: [], currentSeason: null, seasonMovies: [], seasonReviewCount: 0 };
 
 	const latest = await db
 		.select({
@@ -24,6 +25,7 @@ export const load: PageServerLoad = async () => {
 
 	const season = await currentSeason();
 	let seasonMovies: Array<{ title: string; year: number; slug: string }> = [];
+	let seasonReviewCount = 0;
 	if (season) {
 		seasonMovies = await db
 			.select({
@@ -35,7 +37,14 @@ export const load: PageServerLoad = async () => {
 			.innerJoin(movies, eq(movies.id, movieSeasons.movieId))
 			.where(eq(movieSeasons.seasonId, season.id))
 			.orderBy(desc(movieSeasons.addedAt));
+
+		const [row] = await db
+			.select({ value: count() })
+			.from(reviews)
+			.innerJoin(movieSeasons, eq(movieSeasons.movieId, reviews.movieId))
+			.where(eq(movieSeasons.seasonId, season.id));
+		seasonReviewCount = row?.value ?? 0;
 	}
 
-	return { latest, currentSeason: season, seasonMovies };
+	return { latest, currentSeason: season, seasonMovies, seasonReviewCount };
 };

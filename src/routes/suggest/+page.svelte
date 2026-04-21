@@ -1,6 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { enhance } from '$app/forms';
+	import FilmGrain from '$lib/components/FilmGrain.svelte';
+	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import TmdbSearch, { type TmdbResult } from '$lib/components/TmdbSearch.svelte';
+
+	const NAME_STORAGE_KEY = 'movie-szn:submitterName';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -11,8 +17,54 @@
 		message,
 		submitting
 	} = superForm(data.form, {
-		resetForm: true
+		resetForm: false,
+		onResult: ({ result }) => {
+			if (result.type === 'success') {
+				picked = null;
+				searchQuery = '';
+				$form.title = '';
+				$form.year = '' as never;
+				$form.tmdbId = '' as never;
+				$form.tmdbType = '' as never;
+				$form.notes = '';
+			}
+		}
 	});
+
+	let picked = $state<TmdbResult | null>(null);
+	let pickedKey = $derived(picked ? `${picked.id}-${picked.type}` : null);
+	let searchQuery = $state('');
+	let hydrated = $state(false);
+
+	onMount(() => {
+		const saved = localStorage.getItem(NAME_STORAGE_KEY);
+		if (saved && !$form.submitterName) $form.submitterName = saved;
+		hydrated = true;
+	});
+
+	$effect(() => {
+		if (!hydrated) return;
+		const name = $form.submitterName?.trim() ?? '';
+		if (name) localStorage.setItem(NAME_STORAGE_KEY, name);
+		else localStorage.removeItem(NAME_STORAGE_KEY);
+	});
+
+	function handlePick(r: TmdbResult) {
+		picked = r;
+		$form.title = r.title;
+		$form.year = (r.year ?? '') as never;
+		$form.tmdbId = r.id as never;
+		$form.tmdbType = r.type as never;
+		searchQuery = '';
+	}
+
+	function clearPick() {
+		picked = null;
+		$form.title = '';
+		$form.year = '' as never;
+		$form.tmdbId = '' as never;
+		$form.tmdbType = '' as never;
+	}
 </script>
 
 <svelte:head>
@@ -20,29 +72,11 @@
 </svelte:head>
 
 <main class="relative min-h-dvh overflow-hidden">
-	<div class="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-overlay">
-		<svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-			<filter id="grain-suggest">
-				<feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" />
-			</filter>
-			<rect width="100%" height="100%" filter="url(#grain-suggest)" />
-		</svg>
-	</div>
+	<FilmGrain id="grain-suggest" />
 
-	<div class="relative mx-auto max-w-[64rem] px-6 py-12">
-		<header class="mb-10 flex items-center justify-between">
-			<a href="/" class="text-display text-lg italic">
-				movie<span class="text-[color:var(--color-accent)]">-</span>szn
-			</a>
-			<nav
-				class="text-mono flex gap-6 text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
-			>
-				<a class="transition hover:text-[color:var(--color-text)]" href="/reviews">reviews</a>
-				<a class="transition hover:text-[color:var(--color-text)]" href="/watchlist">watchlist</a>
-				<a class="text-[color:var(--color-accent)]" href="/suggest">suggest</a>
-			</nav>
-		</header>
+	<SiteHeader />
 
+	<div class="relative mx-auto max-w-[64rem] px-6 pt-10 pb-12">
 		<div class="mb-12">
 			<p
 				class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
@@ -51,51 +85,56 @@
 			</p>
 			<h1 class="text-display mt-2 text-6xl italic">suggestions</h1>
 			<p class="mt-4 max-w-xl text-[color:var(--color-muted)]">
-				drop a movie dave should watch next. upvote the ones you want most. no signup — but one vote
-				per visitor per title.
+				drop a movie dave should watch next. upvote the ones you want most.
 			</p>
 		</div>
 
 		<section
 			class="mb-12 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
 		>
-			<form
-				method="POST"
-				action="?/submit"
-				use:seEnhance
-				class="grid gap-4 md:grid-cols-[2fr_auto_2fr]"
-			>
-				<label class="block">
-					<span
-						class="text-mono mb-2 block text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
+			<form method="POST" action="?/submit" use:seEnhance class="grid gap-5">
+				<input type="hidden" name="title" bind:value={$form.title} />
+				<input type="hidden" name="year" bind:value={$form.year} />
+				<input type="hidden" name="tmdbId" bind:value={$form.tmdbId} />
+				<input type="hidden" name="tmdbType" bind:value={$form.tmdbType} />
+
+				<div>
+					<p
+						class="text-mono mb-3 block text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
 					>
-						title <span class="text-[color:var(--color-accent-2)]">*</span>
-					</span>
-					<input
-						name="title"
-						bind:value={$form.title}
-						placeholder="e.g. 2001: a space odyssey"
-						class="text-mono w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
-						required
-					/>
-					{#if $errors.title}
-						<p class="text-mono mt-1 text-xs text-[color:var(--color-danger)]">{$errors.title}</p>
+						pick a movie <span class="text-[color:var(--color-accent-2)]">*</span>
+					</p>
+					{#if picked}
+						<div
+							class="text-mono flex items-center justify-between rounded-md border border-[color:var(--color-accent)]/40 bg-[color:var(--color-accent)]/5 px-3 py-2 text-xs"
+						>
+							<span class="text-[color:var(--color-accent)]">
+								picked: <span class="text-display text-sm not-italic">{picked.title}</span>
+								{#if picked.year}({picked.year}){/if}
+							</span>
+							<button
+								type="button"
+								onclick={clearPick}
+								class="tracking-wider text-[color:var(--color-muted)] uppercase hover:text-[color:var(--color-text)]"
+							>
+								change
+							</button>
+						</div>
+					{:else}
+						<TmdbSearch bind:query={searchQuery} onSelect={handlePick} selectedKey={pickedKey} />
 					{/if}
-				</label>
-				<label class="block">
-					<span
-						class="text-mono mb-2 block text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
-					>
-						year
-					</span>
-					<input
-						name="year"
-						type="number"
-						bind:value={$form.year}
-						placeholder="1968"
-						class="text-mono w-24 rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
-					/>
-				</label>
+					{#if $errors.title}
+						<p class="text-mono mt-2 text-xs text-[color:var(--color-danger)]">
+							{$errors.title}
+						</p>
+					{/if}
+					{#if $errors.tmdbId}
+						<p class="text-mono mt-2 text-xs text-[color:var(--color-danger)]">
+							{$errors.tmdbId}
+						</p>
+					{/if}
+				</div>
+
 				<label class="block">
 					<span
 						class="text-mono mb-2 block text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
@@ -105,30 +144,31 @@
 					<input
 						name="submitterName"
 						bind:value={$form.submitterName}
-						placeholder="anon cinephile"
-						class="text-mono w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
+						placeholder="dave"
+						class="text-mono w-full max-w-xs rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
 					/>
 				</label>
-				<label class="block md:col-span-3">
+
+				<label class="block">
 					<span
 						class="text-mono mb-2 block text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
 					>
-						imdb url <span class="text-[color:var(--color-muted)]"
-							>(optional — helps dave find it)</span
-						>
+						notes <span class="text-[color:var(--color-muted)]">(optional — pitch it to dave)</span>
 					</span>
-					<input
-						name="imdbUrl"
-						type="url"
-						bind:value={$form.imdbUrl}
-						placeholder="https://www.imdb.com/title/tt0062622/"
-						class="text-mono w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
-					/>
+					<textarea
+						name="notes"
+						bind:value={$form.notes}
+						rows="3"
+						maxlength="1000"
+						placeholder="why should dave watch this movie?"
+						class="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
+					></textarea>
 				</label>
-				<div class="md:col-span-3">
+
+				<div>
 					<button
 						type="submit"
-						disabled={$submitting}
+						disabled={$submitting || !picked}
 						class="text-mono rounded-md bg-[color:var(--color-accent)] px-5 py-3 text-sm tracking-wider text-[color:var(--color-bg)] uppercase transition hover:opacity-90 disabled:opacity-50"
 					>
 						{$submitting ? 'submitting...' : 'drop it in'}
@@ -148,7 +188,7 @@
 			<p
 				class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
 			>
-				◦ the queue ◦
+				◦ suggestions ◦
 			</p>
 
 			{#if data.suggestions.length === 0}
@@ -180,22 +220,24 @@
 										>
 									{/if}
 								</p>
-								<p
-									class="text-mono mt-1 text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
-								>
-									{#if s.submitterName}from {s.submitterName} ·{/if}
-									{#if s.status === 'watching'}<span class="text-[color:var(--color-accent)]"
-											>dave is watching this</span
-										> ·{/if}
-									{#if s.imdbUrl}
-										<a
-											href={s.imdbUrl}
-											target="_blank"
-											rel="noopener"
-											class="hover:text-[color:var(--color-text)]">imdb ↗</a
-										>
-									{/if}
-								</p>
+								{#if s.status === 'watching' || s.imdbUrl}
+									<p
+										class="text-mono mt-1 text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
+									>
+										{#if s.status === 'watching'}<span class="text-[color:var(--color-accent)]"
+												>dave is watching this</span
+											>{/if}
+										{#if s.status === 'watching' && s.imdbUrl} · {/if}
+										{#if s.imdbUrl}
+											<a
+												href={s.imdbUrl}
+												target="_blank"
+												rel="noopener"
+												class="hover:text-[color:var(--color-text)]">imdb ↗</a
+											>
+										{/if}
+									</p>
+								{/if}
 							</div>
 						</li>
 					{/each}

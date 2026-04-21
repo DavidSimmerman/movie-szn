@@ -2,6 +2,9 @@
 // Generate an argon2id hash of the admin password for ADMIN_PASSWORD_HASH env var.
 // Usage: npm run hash-password -- yourpassword
 //    or: node scripts/hash-password.js yourpassword
+//
+// Output is pre-escaped for .env files — Vite/dotenv-expand mangles raw `$`
+// characters, so we backslash-escape them. The runtime sees the original hash.
 
 import { hash } from '@node-rs/argon2';
 
@@ -18,4 +21,7 @@ const digest = await hash(password, {
 	parallelism: 1
 });
 
-console.log(digest);
+const envSafe = digest.replace(/\$/g, '\\$');
+
+console.log('# paste this whole line into your .env (the backslashes are required):');
+console.log(`ADMIN_PASSWORD_HASH="${envSafe}"`);

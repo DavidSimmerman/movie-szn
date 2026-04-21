@@ -17,6 +17,6 @@ export const load: PageServerLoad = async () => {
 		})
 		.from(reviews)
 		.innerJoin(movies, eq(movies.id, reviews.movieId))
-		.orderBy(desc(reviews.createdAt));
+		.orderBy(desc(reviews.combinedScore), desc(reviews.createdAt));
 	return { reviews: rows };
 };

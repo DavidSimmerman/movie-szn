@@ -32,3 +32,6 @@ vite.config.ts.timestamp-*
 
 # local postgres volumes (just in case)
 /pgdata
+
+# claude code runtime
+.claude/scheduled_tasks.lock

@@ -11,18 +11,20 @@
 
 	const ratings = $derived<RatingBreakdown>({
 		production: $form.production,
+		acting: $form.acting,
 		storyPlot: $form.storyPlot,
-		misc: $form.misc,
+		intent: $form.intent,
 		daveFactor: $form.daveFactor
 	});
 	const score = $derived(combinedScore(ratings));
 	const flex = $derived(isFlex(score));
 
-	const CATEGORY_KEYS = ['production', 'storyPlot', 'misc', 'daveFactor'] as const;
+	const CATEGORY_KEYS = ['production', 'acting', 'storyPlot', 'intent', 'daveFactor'] as const;
 	const CATEGORY_LABELS: Record<(typeof CATEGORY_KEYS)[number], string> = {
 		production: 'production',
+		acting: 'acting',
 		storyPlot: 'story / plot',
-		misc: 'misc',
+		intent: 'intent',
 		daveFactor: 'dave factor'
 	};
 </script>
@@ -97,30 +99,64 @@
 					bind:value={$form[key]}
 					class="w-full accent-[color:var(--color-accent)]"
 				/>
-				<div
-					class="text-mono mt-1 flex justify-between text-[0.6rem] text-[color:var(--color-muted)]"
-				>
-					<span>0</span>
-					<span>2.5</span>
-					<span>5</span>
-					<span class="text-[color:var(--color-gold)]">6 (flex)</span>
+				<div class="text-mono relative mt-1 h-4 text-[0.65rem] text-[color:var(--color-muted)]">
+					<span class="absolute left-0">0</span>
+					<span class="absolute left-[41.6667%] -translate-x-1/2">2.5</span>
+					<span class="absolute left-[83.3333%] -translate-x-1/2">5</span>
+					<span class="absolute right-0 text-[color:var(--color-gold)]">6 (flex)</span>
 				</div>
 			</label>
 		{/each}
 	</div>
 
-	<div>
-		<label class="mb-2 block">
-			<span class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase">
-				watched on
-			</span>
-			<input
-				type="date"
-				bind:value={$form.watchedAt}
-				class="text-mono mt-2 rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
-			/>
-		</label>
-	</div>
+	{#if data.seasons.length > 0}
+		<div>
+			<p class="text-mono mb-3 text-xs tracking-wider text-[color:var(--color-muted)] uppercase">
+				seasons
+			</p>
+			<div class="flex flex-wrap gap-2">
+				{#each data.seasons as s (s.id)}
+					{@const checked = $form.seasonIds.includes(s.id)}
+					{@const isLatest = s.id === data.latestSeasonId}
+					<label
+						class="text-mono flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-xs tracking-wider uppercase transition"
+						class:border-[color:var(--color-accent)]={checked}
+						class:bg-[color:var(--color-accent)]={checked}
+						class:text-[color:var(--color-bg)]={checked}
+						class:border-[color:var(--color-border)]={!checked}
+						class:text-[color:var(--color-muted)]={!checked}
+					>
+						<input
+							type="checkbox"
+							class="sr-only"
+							{checked}
+							onchange={(e) => {
+								if ((e.currentTarget as HTMLInputElement).checked) {
+									$form.seasonIds = [...$form.seasonIds, s.id];
+								} else {
+									$form.seasonIds = $form.seasonIds.filter((id) => id !== s.id);
+								}
+							}}
+						/>
+						<span>{checked ? '✓' : '+'}</span>
+						<span>{s.name}</span>
+						{#if isLatest}
+							<span
+								class="text-[0.55rem] tracking-[0.2em]"
+								class:text-[color:var(--color-bg)]={checked}
+								class:text-[color:var(--color-accent)]={!checked}
+							>
+								latest
+							</span>
+						{/if}
+					</label>
+				{/each}
+			</div>
+			<p class="text-mono mt-2 text-[0.6rem] text-[color:var(--color-muted)]">
+				new reviews are auto-tagged to the latest season. uncheck to opt out.
+			</p>
+		</div>
+	{/if}
 
 	<div>
 		<label class="block">

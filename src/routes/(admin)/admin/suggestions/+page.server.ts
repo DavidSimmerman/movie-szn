@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$server/db';
-import { suggestions } from '$db/schema';
+import { suggestions, suggestionVotes, voterNames } from '$db/schema';
 import type { Actions, PageServerLoad } from './$types';
 
 const statusSchema = z.enum(['pending', 'watching', 'added', 'declined']);
@@ -13,7 +13,27 @@ export const load: PageServerLoad = async () => {
 		.select()
 		.from(suggestions)
 		.orderBy(desc(suggestions.voteCount), desc(suggestions.createdAt));
-	return { suggestions: rows };
+
+	const namedVotes = await db
+		.select({
+			suggestionId: suggestionVotes.suggestionId,
+			createdAt: suggestionVotes.createdAt,
+			name: voterNames.name
+		})
+		.from(suggestionVotes)
+		.innerJoin(voterNames, eq(voterNames.voterHash, suggestionVotes.voterHash))
+		.orderBy(suggestionVotes.createdAt);
+
+	const byId = new Map<string, { name: string; at: Date }[]>();
+	for (const v of namedVotes) {
+		const arr = byId.get(v.suggestionId) ?? [];
+		arr.push({ name: v.name, at: v.createdAt });
+		byId.set(v.suggestionId, arr);
+	}
+
+	const enriched = rows.map((r) => ({ ...r, upvoters: byId.get(r.id) ?? [] }));
+
+	return { suggestions: enriched };
 };
 
 export const actions: Actions = {

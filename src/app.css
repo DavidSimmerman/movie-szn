@@ -14,6 +14,8 @@
 	--color-accent: oklch(78% 0.19 65);
 	--color-accent-2: oklch(65% 0.22 15);
 	--color-gold: oklch(85% 0.14 90);
+	--color-silver: oklch(82% 0.015 240);
+	--color-bronze: oklch(62% 0.11 55);
 	--color-success: oklch(75% 0.17 150);
 	--color-danger: oklch(65% 0.22 25);
 
@@ -70,6 +72,19 @@
 	box-shadow:
 		0 0 40px -10px oklch(78% 0.19 65 / 0.3),
 		0 30px 60px -30px oklch(0% 0 0 / 0.8);
+}
+
+@utility flex-glow {
+	text-shadow:
+		0 0 18px color-mix(in oklab, var(--color-gold) 55%, transparent),
+		0 0 42px color-mix(in oklab, var(--color-gold) 30%, transparent);
+}
+
+@utility flex-glow-ring {
+	box-shadow:
+		0 0 16px -2px color-mix(in oklab, var(--color-gold) 55%, transparent),
+		0 0 32px -4px color-mix(in oklab, var(--color-gold) 35%, transparent),
+		0 4px 20px -4px oklch(0% 0 0 / 0.6);
 }
 
 @media (prefers-reduced-motion: reduce) {

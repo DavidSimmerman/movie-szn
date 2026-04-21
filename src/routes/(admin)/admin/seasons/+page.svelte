@@ -19,7 +19,7 @@
 	<form method="POST" action="?/create" use:enhance class="flex flex-wrap items-end gap-3">
 		<label class="block">
 			<span
-				class="text-mono text-[0.6rem] tracking-wider text-[color:var(--color-muted)] uppercase"
+				class="text-mono text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
 			>
 				year
 			</span>
@@ -32,7 +32,7 @@
 		</label>
 		<label class="block flex-1">
 			<span
-				class="text-mono text-[0.6rem] tracking-wider text-[color:var(--color-muted)] uppercase"
+				class="text-mono text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
 			>
 				name (optional)
 			</span>
@@ -49,7 +49,7 @@
 			+ create
 		</button>
 	</form>
-	<p class="text-mono mt-2 text-[0.6rem] text-[color:var(--color-muted)]">
+	<p class="text-mono mt-2 text-[0.65rem] text-[color:var(--color-muted)]">
 		defaults to april 1 – august 31 of the selected year.
 	</p>
 	{#if form?.error}
@@ -69,7 +69,37 @@
 						{s.startsAt} → {s.endsAt} · /seasons/{s.slug}
 					</p>
 				</div>
-				<form method="POST" action="?/remove" use:enhance>
+				<a
+					href="/admin/seasons/{s.slug}"
+					class="text-mono rounded border border-[color:var(--color-border)] px-3 py-1 text-xs tracking-wider text-[color:var(--color-muted)] uppercase hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"
+				>
+					tag movies
+				</a>
+				<a
+					href="/admin/seasons/{s.slug}/awards"
+					class="text-mono rounded border border-[color:var(--color-accent)]/50 bg-[color:var(--color-accent)]/10 px-3 py-1 text-xs tracking-wider text-[color:var(--color-accent)] uppercase hover:bg-[color:var(--color-accent)]/20"
+				>
+					◦ awards ◦
+				</a>
+				<a
+					href="/seasons/{s.slug}"
+					class="text-mono rounded border border-[color:var(--color-border)] px-3 py-1 text-xs tracking-wider text-[color:var(--color-muted)] uppercase hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"
+				>
+					view public →
+				</a>
+				<form
+					method="POST"
+					action="?/remove"
+					use:enhance
+					onsubmit={(e) => {
+						if (
+							!confirm(
+								`Delete "${s.name}"? Any awards and tagged movies for this season will be lost.`
+							)
+						)
+							e.preventDefault();
+					}}
+				>
 					<input type="hidden" name="id" value={s.id} />
 					<button
 						class="text-mono rounded border border-[color:var(--color-border)] px-2 py-1 text-xs text-[color:var(--color-muted)] hover:border-[color:var(--color-danger)] hover:text-[color:var(--color-danger)]"

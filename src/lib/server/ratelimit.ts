@@ -41,14 +41,21 @@ export async function checkRateLimit(
 	const start = windowStart(now, granularity);
 	const reset = windowEnd(start, granularity);
 
-	const rows = await db
-		.insert(rateLimits)
-		.values({ bucket, windowStart: start, count: 1 })
-		.onConflictDoUpdate({
-			target: [rateLimits.bucket, rateLimits.windowStart],
-			set: { count: sql`${rateLimits.count} + 1` }
-		})
-		.returning({ count: rateLimits.count });
+	let rows: { count: number }[];
+	try {
+		rows = await db
+			.insert(rateLimits)
+			.values({ bucket, windowStart: start, count: 1 })
+			.onConflictDoUpdate({
+				target: [rateLimits.bucket, rateLimits.windowStart],
+				set: { count: sql`${rateLimits.count} + 1` }
+			})
+			.returning({ count: rateLimits.count });
+	} catch (err) {
+		const cause = err instanceof Error && err.cause ? err.cause : err;
+		console.error('[ratelimit] upsert failed', { bucket, start, cause });
+		throw cause instanceof Error ? cause : err;
+	}
 
 	const count = rows[0]?.count ?? 1;
 	return {

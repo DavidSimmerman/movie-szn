@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/private';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '$server/db';
 import { movies, reviews } from '$db/schema';
-import { toNumber, formatScore } from '$lib/ratings';
+import { toNumber, formatPublicScore } from '$lib/ratings';
 
 function escapeXml(s: string): string {
 	return s
@@ -34,7 +34,7 @@ export const GET = async ({ url }) => {
 
 		body = rows
 			.map((r) => {
-				const score = formatScore(toNumber(r.combinedScore));
+				const score = formatPublicScore(toNumber(r.combinedScore));
 				const link = `${origin}/reviews/${r.slug}`;
 				const description = `<![CDATA[<p><strong>${score}/10</strong></p><p>${escapeXml(
 					r.notes || ''

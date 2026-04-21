@@ -97,4 +97,4 @@ HOST_HEADER=x-forwarded-host, ADDRESS_HEADER=x-forwarded-for,
 ADMIN_PASSWORD_HASH, AUTH_SECRET, TMDB_API_KEY, LOG_LEVEL=info
 ```
 
-**Coolify gotchas**: set the health check path to `/healthz` (default is `/`). Use a persistent volume for the Postgres service. Turn on scheduled PG backups in the UI.
+**Coolify gotchas**: set the health check path to `/healthz` (default is `/`). Use a persistent volume for the Postgres service. Turn on scheduled PG backups in the UI. Mount a persistent volume at `/app/og-cache` so the Playwright-generated OG preview (`scripts/og-screenshot.js`, refreshed every 3h by `src/lib/server/og-schedule.ts`) survives restarts.

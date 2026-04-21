@@ -8,6 +8,41 @@
       "when": 1775881364411,
       "tag": "0000_initial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776038400000,
+      "tag": "0001_add_acting_rating",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776038500000,
+      "tag": "0002_suggestion_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776038600000,
+      "tag": "0003_season_awards",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776038700000,
+      "tag": "0004_rename_misc_to_intent",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776785800000,
+      "tag": "0005_voter_names",
+      "breakpoints": true
     }
   ]
 }

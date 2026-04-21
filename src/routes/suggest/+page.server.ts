@@ -4,16 +4,24 @@ import { superValidate, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
 import { db } from '$server/db';
-import { suggestions, suggestionVotes } from '$db/schema';
+import { suggestions, suggestionVotes, voterNames } from '$db/schema';
 import { checkRateLimit } from '$server/ratelimit';
 import { hashIp, voterHash } from '$server/visitor';
+import { upsertMovieFromTmdb } from '$server/movies';
 import type { Actions, PageServerLoad } from './$types';
 
+const emptyToUndef = (v: unknown) => (v === '' || v == null ? undefined : v);
+
 const schema = z.object({
-	title: z.string().min(1, 'title required').max(200),
-	year: z.coerce.number().int().min(1900).max(2100).optional().or(z.literal('')),
-	imdbUrl: z.string().optional().default(''),
-	submitterName: z.string().max(60).optional().default('')
+	title: z.string().max(200).optional().default(''),
+	year: z.preprocess(emptyToUndef, z.coerce.number().int().min(1900).max(2100).optional()),
+	submitterName: z.string().max(60).optional().default(''),
+	notes: z.string().max(1000).optional().default(''),
+	tmdbId: z.preprocess(
+		emptyToUndef,
+		z.coerce.number({ error: 'pick a movie from the search' }).int().positive()
+	),
+	tmdbType: z.preprocess(emptyToUndef, z.enum(['movie', 'show']))
 });
 
 const voteSchema = z.object({
@@ -31,7 +39,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 			title: suggestions.title,
 			year: suggestions.year,
 			imdbUrl: suggestions.imdbUrl,
-			submitterName: suggestions.submitterName,
 			status: suggestions.status,
 			voteCount: suggestions.voteCount,
 			createdAt: suggestions.createdAt
@@ -52,7 +59,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	submit: async ({ request, getClientAddress }) => {
+	submit: async ({ request, locals, getClientAddress }) => {
 		if (!db) return fail(503);
 		const form = await superValidate(request, zod4(schema));
 		if (!form.valid) return fail(400, { form });
@@ -70,14 +77,46 @@ export const actions: Actions = {
 			return message(form, 'too many suggestions this hour — try again later', { status: 429 });
 		}
 
-		const year = form.data.year === '' ? null : ((form.data.year as number | undefined) ?? null);
+		const submitter = form.data.submitterName?.trim() || null;
+		const notes = form.data.notes?.trim() || null;
+
+		let movie;
+		try {
+			movie = await upsertMovieFromTmdb(form.data.tmdbId, form.data.tmdbType);
+		} catch (err) {
+			return message(form, err instanceof Error ? err.message : 'tmdb fetch failed', {
+				status: 502
+			});
+		}
+
+		const dupe = await db.query.suggestions.findFirst({
+			where: (s, { eq: e, and: a, ne }) =>
+				a(e(s.resolvedMovieId, movie.id), ne(s.status, 'declined')),
+			columns: { id: true }
+		});
+		if (dupe) {
+			return message(form, 'already in the queue — go upvote it ↓');
+		}
 
 		await db.insert(suggestions).values({
-			title: form.data.title.trim(),
-			year,
-			imdbUrl: form.data.imdbUrl?.trim() || null,
-			submitterName: form.data.submitterName?.trim() || null
+			title: form.data.title?.trim() || 'untitled',
+			year: form.data.year ?? null,
+			imdbUrl: null,
+			submitterName: submitter,
+			notes,
+			resolvedMovieId: movie.id
 		});
+
+		if (submitter) {
+			const vh = voterHash(ip, locals.visitorId);
+			await db
+				.insert(voterNames)
+				.values({ voterHash: vh, name: submitter })
+				.onConflictDoUpdate({
+					target: voterNames.voterHash,
+					set: { name: submitter, updatedAt: new Date() }
+				});
+		}
 
 		return message(form, 'suggestion added — thanks!');
 	},

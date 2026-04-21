@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { asc, desc, eq } from 'drizzle-orm';
 import { db } from '$server/db';
-import { movies, reviews } from '$db/schema';
+import { awardCategories, awardWinners, movies, reviews, seasons } from '$db/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -17,5 +17,22 @@ export const load: PageServerLoad = async ({ params }) => {
 	});
 	if (!review) throw error(404, 'no review yet for this movie');
 
-	return { movie, review };
+	const awards = await db
+		.select({
+			rank: awardWinners.rank,
+			note: awardWinners.note,
+			categoryName: awardCategories.name,
+			categoryTagline: awardCategories.tagline,
+			allowsMultiple: awardCategories.allowsMultiple,
+			seasonSlug: seasons.slug,
+			seasonName: seasons.name,
+			seasonStartsAt: seasons.startsAt
+		})
+		.from(awardWinners)
+		.innerJoin(awardCategories, eq(awardCategories.id, awardWinners.categoryId))
+		.innerJoin(seasons, eq(seasons.id, awardCategories.seasonId))
+		.where(eq(awardWinners.reviewId, review.id))
+		.orderBy(asc(awardWinners.rank), asc(awardCategories.sortOrder), desc(seasons.startsAt));
+
+	return { movie, review, awards };
 };

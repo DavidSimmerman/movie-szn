@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatScore, scoreTier } from '$lib/ratings';
+	import { formatPublicScore, scoreTier } from '$lib/ratings';
 
 	type Props = {
 		title: string;
@@ -39,13 +39,21 @@
 	</div>
 	{#if score != null}
 		<div
-			class="absolute top-3 right-3 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-bg)]/80 px-3 py-1 text-xs backdrop-blur-md"
+			class="absolute top-3 right-3 rounded-full border bg-[color:var(--color-bg)]/85 px-3 py-1 shadow-[0_4px_20px_-4px_oklch(0%_0_0_/_0.6)] backdrop-blur-md"
+			class:border-[color:var(--color-gold)]={tier === 'flex'}
+			class:border-[color:var(--color-border)]={tier !== 'flex'}
 			class:text-[color:var(--color-gold)]={tier === 'peak' || tier === 'flex'}
 			class:text-[color:var(--color-accent)]={tier === 'high'}
 			class:text-[color:var(--color-text)]={tier === 'mid'}
 			class:text-[color:var(--color-danger)]={tier === 'low'}
+			class:flex-glow-ring={tier === 'flex'}
 		>
-			<span class="text-mono">{formatScore(score)}</span>
+			<span
+				class="text-mono text-sm leading-none font-medium tabular-nums"
+				class:flex-glow={tier === 'flex'}
+			>
+				{formatPublicScore(score)}
+			</span>
 		</div>
 	{/if}
 </a>

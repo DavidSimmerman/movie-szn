@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
+	import FilmGrain from '$lib/components/FilmGrain.svelte';
 
 	const { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -10,15 +11,8 @@
 	<title>login · movie-szn</title>
 </svelte:head>
 
-<main class="relative grid min-h-dvh place-items-center px-6">
-	<div class="pointer-events-none absolute inset-0 opacity-[0.04] mix-blend-overlay">
-		<svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-			<filter id="grain-login">
-				<feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" />
-			</filter>
-			<rect width="100%" height="100%" filter="url(#grain-login)" />
-		</svg>
-	</div>
+<main class="relative grid min-h-dvh place-items-center overflow-hidden px-6">
+	<FilmGrain id="grain-login" />
 
 	<form
 		method="POST"

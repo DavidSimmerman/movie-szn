@@ -12,7 +12,7 @@
 			"args": [
 				"-y",
 				"@modelcontextprotocol/server-postgres",
-				"postgres://dave:dev@localhost:5432/moviereviews"
+				"postgres://dave:dev@localhost:5433/moviereviews"
 			],
 			"description": "Read-only peek into the local dev DB. Handy for 'show me the current watch list order' without writing scripts. NEVER change this URL to a prod connection string."
 		}
