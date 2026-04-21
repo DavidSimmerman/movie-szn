@@ -72,11 +72,6 @@ export const actions: Actions = {
 			}
 		})();
 
-		const rl = await checkRateLimit(`suggest:ip:${hashIp(ip)}`, 3, 'hour');
-		if (!rl.allowed) {
-			return message(form, 'too many suggestions this hour — try again later', { status: 429 });
-		}
-
 		const submitter = form.data.submitterName?.trim() || null;
 		const notes = form.data.notes?.trim() || null;
 
