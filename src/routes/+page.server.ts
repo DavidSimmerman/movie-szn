@@ -21,7 +21,7 @@ export const load: PageServerLoad = async () => {
 		.from(reviews)
 		.innerJoin(movies, eq(movies.id, reviews.movieId))
 		.orderBy(desc(reviews.createdAt))
-		.limit(6);
+		.limit(10);
 
 	const season = await currentSeason();
 	let seasonMovies: Array<{ title: string; year: number; slug: string }> = [];

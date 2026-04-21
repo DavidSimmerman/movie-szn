@@ -1,11 +1,10 @@
 <script lang="ts">
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
-	import PosterCard from '$lib/components/PosterCard.svelte';
+	import LatestReviewsCarousel from '$lib/components/LatestReviewsCarousel.svelte';
 	import ProjectorTitle from '$lib/components/ProjectorTitle.svelte';
 	import ScoringGuide from '$lib/components/ScoringGuide.svelte';
 	import SeasonMarquee from '$lib/components/SeasonMarquee.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
-	import { toNumber } from '$lib/ratings';
 
 	let { data } = $props();
 	const year = new Date().getFullYear();
@@ -97,17 +96,7 @@
 				>
 					◦ latest reviews ◦
 				</p>
-				<div class="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
-					{#each data.latest as r (r.id)}
-						<PosterCard
-							title={r.title}
-							year={r.year}
-							slug={r.slug}
-							posterUrl={r.posterUrl}
-							score={toNumber(r.combinedScore)}
-						/>
-					{/each}
-				</div>
+				<LatestReviewsCarousel items={data.latest} />
 			</section>
 		{:else}
 			<section>
