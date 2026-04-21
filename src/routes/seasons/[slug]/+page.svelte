@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AwardsCarousel from '$lib/components/AwardsCarousel.svelte';
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
 	import PosterCard from '$lib/components/PosterCard.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
@@ -55,7 +56,11 @@
 					</p>
 				</header>
 
-				<ul class="awards-preview__grid">
+				<div class="awards-preview__mobile">
+					<AwardsCarousel picks={preview.picks} {rankLabel} />
+				</div>
+
+				<ul class="awards-preview__grid awards-preview__desktop">
 					{#each arrangedPicks() as { pick, tier } (pick.categoryId)}
 						<li class="awards-preview__pick awards-preview__pick--{tier}">
 							<a href="/reviews/{pick.movieSlug}" class="awards-preview__card">
@@ -181,21 +186,29 @@
 		max-width: 30ch;
 	}
 
+	.awards-preview__mobile {
+		display: block;
+	}
+
 	.awards-preview__grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1.25rem 1rem;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 1rem;
 		margin: 0 0 1.75rem;
-		padding: 0;
+		padding: 1.5rem 0 0;
 		list-style: none;
 		align-items: end;
 	}
 
+	.awards-preview__desktop {
+		display: none;
+	}
+
 	@media (min-width: 640px) {
-		.awards-preview__grid {
-			grid-template-columns: repeat(5, 1fr);
-			gap: 1rem;
-			padding: 1.5rem 0 0;
+		.awards-preview__mobile {
+			display: none;
+		}
+		.awards-preview__desktop {
+			display: grid;
 		}
 	}
 

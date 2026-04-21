@@ -23,7 +23,11 @@
 	const links = $derived(props.links ?? DEFAULT_LINKS);
 	const klass = $derived(props.class ?? '');
 	const resolvedPill = $derived<Pill | null>(
-		'pill' in props ? (props.pill ?? null) : page.data.admin ? { href: '/admin', label: 'admin' } : null
+		'pill' in props
+			? (props.pill ?? null)
+			: page.data.admin
+				? { href: '/admin', label: 'admin' }
+				: null
 	);
 
 	const current = $derived(page.url.pathname);
@@ -34,14 +38,24 @@
 </script>
 
 <div data-og-hide class="relative mx-auto w-full max-w-[72rem] px-6 pt-8 sm:pt-10 {klass}">
-	<header class="flex items-center justify-between">
-		<a href="/" class="text-display text-lg italic" aria-label="movie-szn home">
-			movie<span class="text-[color:var(--color-accent)]">-</span>szn
-		</a>
+	<header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+		<div class="flex items-center justify-between gap-4">
+			<a href="/" class="text-display text-lg whitespace-nowrap italic" aria-label="movie-szn home">
+				movie<span class="text-[color:var(--color-accent)]">-</span>szn
+			</a>
+			{#if resolvedPill}
+				<a
+					href={resolvedPill.href}
+					class="text-mono -my-1 rounded border border-[color:var(--color-accent)]/50 px-2 py-1 text-[0.65rem] tracking-wider text-[color:var(--color-accent)] uppercase transition hover:bg-[color:var(--color-accent)]/10 sm:hidden"
+				>
+					{resolvedPill.label}
+				</a>
+			{/if}
+		</div>
 
 		<nav
 			aria-label="primary"
-			class="text-mono flex items-center gap-5 text-xs tracking-wider text-[color:var(--color-muted)] uppercase sm:gap-6"
+			class="text-mono flex w-full items-center justify-between text-xs tracking-wider text-[color:var(--color-muted)] uppercase sm:w-auto sm:justify-end sm:gap-6"
 		>
 			{#each links as link (link.href)}
 				{@const active = isActive(link.href)}
@@ -57,7 +71,7 @@
 			{#if resolvedPill}
 				<a
 					href={resolvedPill.href}
-					class="-my-1 rounded border border-[color:var(--color-accent)]/50 px-2 py-1 text-[0.65rem] text-[color:var(--color-accent)] transition hover:bg-[color:var(--color-accent)]/10"
+					class="-my-1 hidden rounded border border-[color:var(--color-accent)]/50 px-2 py-1 text-[0.65rem] text-[color:var(--color-accent)] transition hover:bg-[color:var(--color-accent)]/10 sm:inline-block"
 				>
 					{resolvedPill.label}
 				</a>
