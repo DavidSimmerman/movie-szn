@@ -5,7 +5,7 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm install --no-audit --no-fund --omit=optional
+RUN npm install --no-audit --no-fund
 
 FROM base AS build
 ENV NODE_ENV=production
