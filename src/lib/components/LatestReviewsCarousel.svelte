@@ -97,7 +97,7 @@
 	<div
 		bind:this={track}
 		onscroll={onScroll}
-		class="reel -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-6 pb-4"
+		class="reel -mx-5 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-5 pb-4 sm:-mx-6 sm:px-6"
 	>
 		{#each items as r (r.id)}
 			<div class="reel-item shrink-0 snap-start">

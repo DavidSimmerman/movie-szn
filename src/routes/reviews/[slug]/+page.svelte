@@ -46,13 +46,13 @@
 
 	<SiteHeader />
 
-	<div class="relative mx-auto max-w-[72rem] px-6 pt-10 pb-12">
-		<div class="grid gap-12 lg:grid-cols-[auto_1fr]">
+	<div class="relative mx-auto max-w-[72rem] px-5 pt-8 pb-12 sm:px-6 lg:pt-10">
+		<div class="grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-12">
 			{#if data.movie.posterUrl}
 				<img
 					src={data.movie.posterUrl}
 					alt={data.movie.title}
-					class="shadow-bulb w-56 rounded-[var(--radius-card)] border border-[color:var(--color-border)] lg:w-72"
+					class="shadow-bulb mx-auto w-full max-w-[15rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] sm:max-w-[16rem] lg:mx-0 lg:w-72 lg:max-w-none"
 				/>
 			{/if}
 
@@ -70,17 +70,19 @@
 						· {data.movie.runtimeMinutes}m{/if}
 				</p>
 
-				<div class="mt-8">
+				<div class="mt-7 lg:mt-8">
 					<HeroScore {score} />
 				</div>
 
 				{#if data.movie.overview}
-					<p class="mt-8 max-w-2xl text-[color:var(--color-muted)]">{data.movie.overview}</p>
+					<p class="mt-7 max-w-2xl text-[color:var(--color-muted)] lg:mt-8">
+						{data.movie.overview}
+					</p>
 				{/if}
 			</div>
 		</div>
 
-		<section class="mt-16">
+		<section class="mt-12 lg:mt-16">
 			<div class="mb-4 flex items-center justify-between gap-3">
 				<p
 					class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
@@ -90,14 +92,14 @@
 				<ScoringGuideDialog />
 			</div>
 			<div
-				class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-8"
+				class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-5 sm:p-6 lg:p-8"
 			>
 				<RatingFilmstrip {ratings} />
 			</div>
 		</section>
 
 		{#if data.awards.length > 0}
-			<section class="mt-16">
+			<section class="mt-12 lg:mt-16">
 				<p
 					class="text-mono mb-4 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
 				>
@@ -106,22 +108,26 @@
 				<ul class="space-y-2">
 					{#each data.awards as a, i (i)}
 						<li
-							class="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3"
+							class="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-3 sm:px-4"
 						>
 							<span class="award-badge text-mono {rankClass(a.rank, a.allowsMultiple)}">
 								{rankLabel(a.rank, a.allowsMultiple)}
 							</span>
-							<div class="min-w-0 flex-1">
-								<p class="text-display text-lg leading-tight italic">{a.categoryName}</p>
+							<div class="min-w-0">
+								<p class="text-display text-base leading-tight italic sm:text-lg">
+									{a.categoryName}
+								</p>
 								{#if a.note}
-									<p class="text-display text-sm text-[color:var(--color-muted)] italic">
+									<p
+										class="text-display mt-0.5 text-sm leading-tight text-[color:var(--color-muted)] italic"
+									>
 										— {a.note}
 									</p>
 								{/if}
 							</div>
 							<a
 								href="/seasons/{a.seasonSlug}/awards"
-								class="text-mono text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-accent)]"
+								class="text-mono justify-self-end text-[0.65rem] tracking-wider whitespace-nowrap text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-accent)]"
 							>
 								{a.seasonName} →
 							</a>

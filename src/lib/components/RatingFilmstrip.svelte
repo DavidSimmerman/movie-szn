@@ -23,9 +23,14 @@
 </script>
 
 <div
-	class="flex flex-wrap justify-between"
+	class:grid={!compact}
+	class:grid-cols-2={!compact}
+	class:lg:grid-cols-5={!compact}
 	class:gap-y-8={!compact}
 	class:gap-x-4={!compact}
+	class:flex={compact}
+	class:flex-wrap={compact}
+	class:justify-between={compact}
 	class:gap-y-4={compact}
 	class:gap-x-2={compact}
 >

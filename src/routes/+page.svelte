@@ -21,15 +21,17 @@
 
 	<SiteHeader />
 
-	<div class="relative mx-auto flex min-h-dvh max-w-[72rem] flex-col px-6 pb-10">
-		<section class="flex flex-1 flex-col justify-center py-16">
-			<p class="text-mono mb-6 text-xs tracking-[0.4em] text-[color:var(--color-accent)] uppercase">
+	<div class="relative mx-auto flex min-h-dvh max-w-[72rem] flex-col px-5 pb-10 sm:px-6">
+		<section class="flex flex-1 flex-col justify-center py-12 sm:py-16">
+			<p
+				class="text-mono mb-5 text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase sm:mb-6 sm:text-xs"
+			>
 				◦ {seasonLabel} · {reelsLabel} ◦
 			</p>
-			<h1 class="text-display text-[clamp(4rem,14vw,12rem)] leading-[0.85] italic">
+			<h1 class="text-display text-[clamp(3.5rem,14vw,12rem)] leading-[0.85] italic">
 				<ProjectorTitle text="movie-szn" accent="-" />
 			</h1>
-			<p class="mt-6 max-w-xl text-lg text-[color:var(--color-muted)]">
+			<p class="mt-5 max-w-xl text-base text-[color:var(--color-muted)] sm:mt-6 sm:text-lg">
 				a time of year dedicated to giving great movies the attention they deserve.
 			</p>
 		</section>
@@ -39,18 +41,18 @@
 		<SeasonMarquee seasonName={data.currentSeason.name} items={data.seasonMovies} />
 	{/if}
 
-	<div class="relative mx-auto max-w-[72rem] px-6 py-16">
-		<section class="mb-20">
+	<div class="relative mx-auto max-w-[72rem] px-5 py-12 sm:px-6 lg:py-16">
+		<section class="mb-12 lg:mb-20">
 			<p
-				class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+				class="text-mono mb-4 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase sm:mb-6"
 			>
 				◦ director's note ◦
 			</p>
 			<article
-				class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-8 sm:p-10"
+				class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6 sm:p-8 lg:p-10"
 			>
 				<div
-					class="text-display max-w-[56ch] space-y-5 text-lg leading-relaxed text-[color:var(--color-muted)] italic sm:text-xl"
+					class="text-display max-w-[56ch] space-y-4 text-base leading-relaxed text-[color:var(--color-muted)] italic sm:space-y-5 sm:text-lg lg:text-xl"
 				>
 					<p>
 						movie-szn started as a frustration with holiday movies. every christmas morning my
@@ -82,7 +84,7 @@
 					</p>
 				</div>
 				<p
-					class="text-mono mt-8 text-right text-xs tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+					class="text-mono mt-6 text-right text-xs tracking-[0.3em] text-[color:var(--color-muted)] uppercase sm:mt-8"
 				>
 					— dave
 				</p>
@@ -92,7 +94,7 @@
 		{#if data.latest.length > 0}
 			<section>
 				<p
-					class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+					class="text-mono mb-4 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase sm:mb-6"
 				>
 					◦ latest reviews ◦
 				</p>
@@ -101,7 +103,7 @@
 		{:else}
 			<section>
 				<p
-					class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+					class="text-mono mb-4 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase sm:mb-6"
 				>
 					◦ coming soon ◦
 				</p>
@@ -111,9 +113,9 @@
 			</section>
 		{/if}
 
-		<section class="mt-20">
+		<section class="mt-12 lg:mt-20">
 			<p
-				class="text-mono mb-6 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+				class="text-mono mb-4 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase sm:mb-6"
 			>
 				◦ how it's scored ◦
 			</p>
@@ -121,7 +123,7 @@
 		</section>
 
 		<footer
-			class="text-mono mt-16 flex items-center justify-between border-t border-[color:var(--color-border)] pt-6 text-xs text-[color:var(--color-muted)]"
+			class="text-mono mt-12 flex items-center justify-between border-t border-[color:var(--color-border)] pt-6 text-xs text-[color:var(--color-muted)] lg:mt-16"
 		>
 			<span>© {year} dave</span>
 			<a href="/rss.xml" class="hover:text-[color:var(--color-text)]">rss</a>

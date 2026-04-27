@@ -55,10 +55,12 @@
 		}
 	}
 	.marquee-track {
-		animation: marquee 45s linear infinite;
+		animation: marquee 10s linear infinite;
 	}
-	.marquee-wrap:hover .marquee-track {
-		animation-play-state: paused;
+	@media (hover: hover) {
+		.marquee-wrap:hover .marquee-track {
+			animation-play-state: paused;
+		}
 	}
 	@keyframes marquee {
 		from {
