@@ -26,7 +26,11 @@
 			<p
 				class="text-mono mb-5 text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase sm:mb-6 sm:text-xs"
 			>
-				◦ {seasonLabel} · {reelsLabel} ◦
+				<span class="hidden sm:inline">◦ </span>{seasonLabel} · {reelsLabel}<span
+					class="hidden sm:inline"
+				>
+					◦</span
+				>
 			</p>
 			<h1 class="text-display text-[clamp(3.5rem,14vw,12rem)] leading-[0.85] italic">
 				<ProjectorTitle text="movie-szn" accent="-" />
@@ -56,16 +60,16 @@
 				>
 					<p>
 						movie-szn started as a frustration with holiday movies. every christmas morning my
-						family puts on <em>A Christmas Story</em> and leaves it running. i can't stand it, but
-						i've seen it at least once a year for my entire life — which makes it, by
-						raw count, the movie i've watched more than any other. nothing else comes close.
+						family puts on <em>A Christmas Story</em> and leaves it running. i can't stand it, but i've
+						seen it at least once a year for my entire life — which makes it, by raw count, the movie
+						i've watched more than any other. nothing else comes close.
 					</p>
 					<p>
-						it isn't just my family. people talk about their yearly christmas rewatch like a
-						ritual, and fair enough. but ask those same people to name their favorite films and a
-						holiday movie almost never makes the cut. the ones they love most and the ones they
-						watch most end up on two different lists, and it's those yearly holiday rewatches
-						quietly running up the count.
+						it isn't just my family. people talk about their yearly christmas rewatch like a ritual,
+						and fair enough. but ask those same people to name their favorite films and a holiday
+						movie almost never makes the cut. the ones they love most and the ones they watch most
+						end up on two different lists, and it's those yearly holiday rewatches quietly running
+						up the count.
 					</p>
 					<p class="text-[color:var(--color-accent)]">
 						so where's the love for the actual greats? why don't we make a tradition of rewatching
@@ -74,9 +78,9 @@
 					<p>
 						i'm a sports guy — college basketball, college football, the nfl. september through
 						april there are usually four games running at once and a movie doesn't make the screen.
-						the other half of the year is a sports dead zone (baseball aside — yuck), so i carved
-						it off and called it movie season: time to rewatch the ones i love and finally get to
-						the ones i've been meaning to.
+						the other half of the year is a sports dead zone (baseball aside — yuck), so i carved it
+						off and called it movie season: time to rewatch the ones i love and finally get to the
+						ones i've been meaning to.
 					</p>
 					<p>
 						this site documents each season to keep track of the movies i really enjoy, and gives

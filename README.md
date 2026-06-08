@@ -8,6 +8,18 @@ A personal, cinematic movie & TV review site built around the concept of "movie 
   <img src="docs/preview.png" alt="movie-szn — a time of year dedicated to giving great movies the attention they deserve" width="100%" />
 </a>
 
+## Why movie season?
+
+movie-szn started as a frustration with holiday movies. Every Christmas morning my family puts on _A Christmas Story_ and leaves it running. I can't stand it, but I've seen it at least once a year for my entire life — which makes it, by raw count, the movie I've watched more than any other. Nothing else comes close.
+
+It isn't just my family. People talk about their yearly Christmas rewatch like a ritual, and fair enough. But ask those same people to name their favorite films and a holiday movie almost never makes the cut. The ones they love most and the ones they watch most end up on two different lists, and it's those yearly holiday rewatches quietly running up the count.
+
+So where's the love for the actual greats? Why don't we make a tradition of rewatching the all-time classics every year?
+
+I'm a sports guy — college basketball, college football, the NFL. September through April there are usually four games running at once and a movie doesn't make the screen. The other half of the year is a sports dead zone (baseball aside — yuck), so I carved it off and called it movie season: time to rewatch the ones I love and finally get to the ones I've been meaning to.
+
+This site documents each season to keep track of the movies I really enjoy, and gives friends a chance to suggest picks and ride along on the fun.
+
 ## The rating system
 
 Four category scores, each 0–5 with decimals. You can rate a category `6/5` when you really loved it. The combined score is `(production + story_plot + misc + dave_factor) / 4 × 2`, so it lives on a /10 scale — except when every category maxes out, and then you get a **12/10 flex**.

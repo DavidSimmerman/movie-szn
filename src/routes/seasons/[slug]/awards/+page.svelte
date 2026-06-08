@@ -78,7 +78,7 @@
 			</p>
 			<h1 class="text-display mt-2 text-5xl italic sm:text-6xl">{data.season.name}</h1>
 			<p
-				class="text-display awards-title mt-4 text-7xl tracking-[0.2em] text-[color:var(--color-gold)] sm:text-9xl"
+				class="text-display awards-title mt-4 text-[clamp(2.75rem,14vw,8rem)] text-[color:var(--color-gold)]"
 			>
 				AWARDS
 			</p>
