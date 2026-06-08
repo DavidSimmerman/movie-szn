@@ -2,6 +2,12 @@
 
 A personal, cinematic movie & TV review site built around the concept of "movie season" — April through the end of August, when the watching gets serious. Dave is the sole reviewer. The public can suggest what to watch next and upvote each other's picks, no signup required.
 
+**Live at [movie-szn.simmerman.tech](https://movie-szn.simmerman.tech)**
+
+<a href="https://movie-szn.simmerman.tech">
+  <img src="docs/preview.png" alt="movie-szn — a time of year dedicated to giving great movies the attention they deserve" width="100%" />
+</a>
+
 ## The rating system
 
 Four category scores, each 0–5 with decimals. You can rate a category `6/5` when you really loved it. The combined score is `(production + story_plot + misc + dave_factor) / 4 × 2`, so it lives on a /10 scale — except when every category maxes out, and then you get a **12/10 flex**.
