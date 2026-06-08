@@ -340,6 +340,9 @@
 	.podium {
 		grid-template-columns: 1fr;
 	}
+	.podium-slot {
+		position: relative;
+	}
 	@media (min-width: 640px) {
 		.podium {
 			grid-template-columns: 1fr 1.3fr 1fr;
@@ -349,7 +352,6 @@
 		}
 		.podium-slot {
 			grid-row: 1;
-			position: relative;
 		}
 		.podium-first {
 			grid-column: 2;
