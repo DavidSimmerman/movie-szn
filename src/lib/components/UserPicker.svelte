@@ -12,11 +12,6 @@
 	const current = $derived(all.find((u) => u.id === viewUser?.id) ?? owner);
 	const canonical = $derived(stripProfilePrefix(page.url.pathname));
 	const label = $derived(props.label ?? 'reviews by');
-
-	function closeOnBlur(e: FocusEvent) {
-		const el = e.currentTarget as HTMLDetailsElement;
-		if (!el.contains(e.relatedTarget as Node)) el.open = false;
-	}
 </script>
 
 {#snippet avatar(u: U, size: string)}
@@ -32,12 +27,12 @@
 {/snippet}
 
 {#if all.length > 1 && current}
-	<details class="user-picker relative" title={label} onfocusout={closeOnBlur}>
+	<details class="user-picker relative" title={label}>
 		<summary
 			aria-label={label}
-			class="text-mono flex cursor-pointer list-none items-center gap-2 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-1.5 pr-2 pl-1.5 text-xs tracking-wider uppercase transition select-none hover:border-[color:var(--color-accent)]/60"
+			class="text-mono flex cursor-pointer list-none items-center gap-2.5 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-1.5 pr-3 pl-1.5 text-xs tracking-wider uppercase transition select-none hover:border-[color:var(--color-accent)]/60"
 		>
-			{@render avatar(current, 'h-6 w-6')}
+			{@render avatar(current, 'h-9 w-9')}
 			<span>{current.name}</span>
 			<svg
 				class="chevron h-3 w-3 text-[color:var(--color-muted)]"
@@ -49,18 +44,18 @@
 		</summary>
 
 		<div
-			class="absolute right-0 z-20 mt-2 min-w-[12rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)]"
+			class="absolute right-0 z-20 mt-2 min-w-[14rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1.5 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)]"
 		>
 			{#each all as u (u.id)}
 				{@const active = current.id === u.id}
 				<a
 					href={profileHref(canonical, u.username, owner?.username ?? u.username)}
 					aria-current={active ? 'page' : undefined}
-					class="text-mono flex items-center gap-2 rounded-[calc(var(--radius-card)-4px)] px-2 py-1.5 text-xs tracking-wider uppercase transition {active
+					class="text-mono flex items-center gap-3 rounded-[calc(var(--radius-card)-4px)] px-2.5 py-2 text-sm tracking-wider uppercase transition {active
 						? 'bg-[color:var(--color-accent)]/10 text-[color:var(--color-accent)]'
 						: 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]'}"
 				>
-					{@render avatar(u, 'h-7 w-7')}
+					{@render avatar(u, 'h-12 w-12')}
 					<span class="flex-1">{u.name}</span>
 					{#if active}<span aria-hidden="true">✓</span>{/if}
 				</a>
