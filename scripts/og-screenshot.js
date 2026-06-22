@@ -4,19 +4,20 @@
 
 import { chromium } from 'playwright';
 import { mkdir, rename, unlink } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
 
 const port = process.env.PORT ?? '3000';
 const url = process.env.OG_SCREENSHOT_URL ?? `http://127.0.0.1:${port}/`;
 const cacheDir = resolve(process.env.OG_CACHE_DIR ?? '/app/og-cache');
-const finalPath = resolve(cacheDir, 'og.png');
-const tmpPath = resolve(cacheDir, `og.${process.pid}.tmp.png`);
+// OG_OUT lets a caller (e.g. the per-review endpoint) target a specific file.
+const finalPath = process.env.OG_OUT ? resolve(process.env.OG_OUT) : resolve(cacheDir, 'og.png');
+const tmpPath = resolve(dirname(finalPath), `.og.${process.pid}.tmp.png`);
 
 const WIDTH = 1200;
 const HEIGHT = 630;
 
 async function run() {
-	await mkdir(cacheDir, { recursive: true });
+	await mkdir(dirname(finalPath), { recursive: true });
 
 	const browser = await chromium.launch({ headless: true });
 	try {
@@ -29,6 +30,7 @@ async function run() {
 
 		await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 });
 		await page.waitForSelector('h1', { timeout: 15_000 });
+		await page.evaluate(() => document.fonts.ready);
 
 		await page.addStyleTag({
 			content: `[data-og-hide]{display:none!important}body{overflow:hidden!important}`
