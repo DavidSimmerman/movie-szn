@@ -9,7 +9,7 @@
 	const all = $derived(props.users ?? (page.data.users as U[]) ?? []);
 	const owner = $derived(page.data.owner as U | undefined);
 	const viewUser = $derived(page.data.viewUser as U | null);
-	const current = $derived(all.find((u) => u.id === viewUser?.id) ?? owner);
+	const current = $derived(all.find((u) => u.id === viewUser?.id) ?? all[0]);
 	const canonical = $derived(stripProfilePrefix(page.url.pathname));
 	const label = $derived(props.label ?? 'reviews by');
 </script>
@@ -26,44 +26,62 @@
 	{/if}
 {/snippet}
 
-{#if all.length > 1 && current}
-	<details class="user-picker relative" title={label}>
-		<summary
-			aria-label={label}
-			class="text-mono flex cursor-pointer list-none items-center gap-2.5 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-1.5 pr-3 pl-1.5 text-xs tracking-wider uppercase transition select-none hover:border-[color:var(--color-accent)]/60"
+{#if all.length >= 1 && current}
+	<div class="flex flex-col items-end gap-1.5">
+		<span
+			class="text-mono text-[0.6rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
 		>
-			{@render avatar(current, 'h-12 w-12')}
-			<span>{current.name}</span>
-			<svg
-				class="chevron h-3 w-3 text-[color:var(--color-muted)]"
-				viewBox="0 0 12 12"
-				aria-hidden="true"
-			>
-				<path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
-			</svg>
-		</summary>
+			{label}
+		</span>
 
-		<div
-			class="absolute right-0 z-20 mt-2 min-w-[14rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1.5 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)]"
-		>
-			{#each all as u (u.id)}
-				{@const active = current.id === u.id}
-				<a
-					href={profileHref(canonical, u.username, owner?.username ?? u.username)}
-					aria-current={active ? 'page' : undefined}
-					onclick={(e) =>
-						(e.currentTarget as HTMLElement).closest('details')?.removeAttribute('open')}
-					class="text-mono flex items-center gap-3 rounded-[calc(var(--radius-card)-4px)] px-2.5 py-2 text-sm tracking-wider uppercase transition {active
-						? 'bg-[color:var(--color-accent)]/10 text-[color:var(--color-accent)]'
-						: 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]'}"
+		{#if all.length > 1}
+			<details class="user-picker relative" title={label}>
+				<summary
+					aria-label={label}
+					class="text-mono flex cursor-pointer list-none items-center gap-2.5 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-1.5 pr-3 pl-1.5 text-xs tracking-wider uppercase transition select-none hover:border-[color:var(--color-accent)]/60"
 				>
-					{@render avatar(u, 'h-16 w-16')}
-					<span class="flex-1">{u.name}</span>
-					{#if active}<span aria-hidden="true">✓</span>{/if}
-				</a>
-			{/each}
-		</div>
-	</details>
+					{@render avatar(current, 'h-12 w-12')}
+					<span>{current.name}</span>
+					<svg
+						class="chevron h-3 w-3 text-[color:var(--color-muted)]"
+						viewBox="0 0 12 12"
+						aria-hidden="true"
+					>
+						<path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+					</svg>
+				</summary>
+
+				<div
+					class="absolute right-0 z-20 mt-2 min-w-[14rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1.5 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)]"
+				>
+					{#each all as u (u.id)}
+						{@const active = current.id === u.id}
+						<a
+							href={profileHref(canonical, u.username, owner?.username ?? u.username)}
+							aria-current={active ? 'page' : undefined}
+							onclick={(e) =>
+								(e.currentTarget as HTMLElement).closest('details')?.removeAttribute('open')}
+							class="text-mono flex items-center gap-3 rounded-[calc(var(--radius-card)-4px)] px-2.5 py-2 text-sm tracking-wider uppercase transition {active
+								? 'bg-[color:var(--color-accent)]/10 text-[color:var(--color-accent)]'
+								: 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]'}"
+						>
+							{@render avatar(u, 'h-16 w-16')}
+							<span class="flex-1">{u.name}</span>
+							{#if active}<span aria-hidden="true">✓</span>{/if}
+						</a>
+					{/each}
+				</div>
+			</details>
+		{:else}
+			<!-- single reviewer: no one to switch to, so just show who it is -->
+			<div
+				class="text-mono flex items-center gap-2.5 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-1.5 pr-4 pl-1.5 text-xs tracking-wider uppercase"
+			>
+				{@render avatar(current, 'h-12 w-12')}
+				<span>{current.name}</span>
+			</div>
+		{/if}
+	</div>
 {/if}
 
 <style>
