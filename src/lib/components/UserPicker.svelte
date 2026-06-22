@@ -19,7 +19,7 @@
 		<img src={u.avatarUrl} alt="" class="{size} shrink-0 rounded-full object-cover" />
 	{:else}
 		<span
-			class="{size} text-mono grid shrink-0 place-items-center rounded-full bg-[color:var(--color-surface-2)] text-[0.7em] uppercase"
+			class="{size} text-display grid shrink-0 place-items-center rounded-full bg-[color:var(--color-surface-2)] text-lg uppercase"
 		>
 			{u.name.charAt(0)}
 		</span>
@@ -32,7 +32,7 @@
 			aria-label={label}
 			class="text-mono flex cursor-pointer list-none items-center gap-2.5 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] py-1.5 pr-3 pl-1.5 text-xs tracking-wider uppercase transition select-none hover:border-[color:var(--color-accent)]/60"
 		>
-			{@render avatar(current, 'h-9 w-9')}
+			{@render avatar(current, 'h-12 w-12')}
 			<span>{current.name}</span>
 			<svg
 				class="chevron h-3 w-3 text-[color:var(--color-muted)]"
@@ -51,11 +51,13 @@
 				<a
 					href={profileHref(canonical, u.username, owner?.username ?? u.username)}
 					aria-current={active ? 'page' : undefined}
+					onclick={(e) =>
+						(e.currentTarget as HTMLElement).closest('details')?.removeAttribute('open')}
 					class="text-mono flex items-center gap-3 rounded-[calc(var(--radius-card)-4px)] px-2.5 py-2 text-sm tracking-wider uppercase transition {active
 						? 'bg-[color:var(--color-accent)]/10 text-[color:var(--color-accent)]'
 						: 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]'}"
 				>
-					{@render avatar(u, 'h-12 w-12')}
+					{@render avatar(u, 'h-16 w-16')}
 					<span class="flex-1">{u.name}</span>
 					{#if active}<span aria-hidden="true">✓</span>{/if}
 				</a>

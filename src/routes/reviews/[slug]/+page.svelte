@@ -74,12 +74,11 @@
 				<h1 class="text-display mt-2 text-5xl leading-[0.95] italic sm:text-6xl lg:text-7xl">
 					{data.movie.title}
 				</h1>
-				<p class="text-mono mt-3 text-sm text-[color:var(--color-muted)]">
-					{data.movie.year} · {data.movie.type}{#if data.movie.runtimeMinutes}
-						· {data.movie.runtimeMinutes}m{/if}
-				</p>
-
-				<div class="mt-5">
+				<div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+					<p class="text-mono text-sm text-[color:var(--color-muted)]">
+						{data.movie.year} · {data.movie.type}{#if data.movie.runtimeMinutes}
+							· {data.movie.runtimeMinutes}m{/if}
+					</p>
 					<UserPicker users={data.reviewers} label="review by" />
 				</div>
 
