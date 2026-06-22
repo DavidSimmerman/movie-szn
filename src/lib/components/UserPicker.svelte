@@ -29,7 +29,7 @@
 {#if all.length >= 1 && current}
 	<div class="flex flex-col items-end gap-1.5">
 		<span
-			class="text-mono text-[0.6rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+			class="text-mono w-full text-center text-[0.6rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
 		>
 			{label}
 		</span>
