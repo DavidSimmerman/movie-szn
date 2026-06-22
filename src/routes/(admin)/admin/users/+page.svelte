@@ -5,11 +5,26 @@
 
 	const fmtDate = (d: string | Date) =>
 		new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+	const inputClass =
+		'text-mono w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]';
 </script>
 
 <svelte:head><title>users · admin</title></svelte:head>
 
 <h1 class="text-display mb-8 text-5xl italic">reviewers</h1>
+
+{#snippet avatar(name: string, url: string | null | undefined, size: string)}
+	{#if url}
+		<img src={url} alt="" class="{size} shrink-0 rounded-full object-cover" />
+	{:else}
+		<span
+			class="{size} text-mono grid shrink-0 place-items-center rounded-full bg-[color:var(--color-surface-2)] text-sm uppercase"
+		>
+			{name.charAt(0)}
+		</span>
+	{/if}
+{/snippet}
 
 <div class="grid gap-10 lg:grid-cols-[20rem_1fr]">
 	<section>
@@ -34,7 +49,7 @@
 					required
 					maxlength="40"
 					placeholder="Rob"
-					class="text-mono mt-2 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
+					class="{inputClass} mt-2"
 				/>
 			</label>
 			<label class="block">
@@ -48,11 +63,22 @@
 					autocapitalize="none"
 					pattern="[a-z0-9-]+"
 					placeholder="rob"
-					class="text-mono mt-2 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
+					class="{inputClass} mt-2"
 				/>
 				<span class="text-mono mt-1 block text-[0.6rem] text-[color:var(--color-muted)]">
 					used in their links: /user/&lt;username&gt;/reviews
 				</span>
+			</label>
+			<label class="block">
+				<span class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase">
+					avatar url <span class="lowercase opacity-60">(optional)</span>
+				</span>
+				<input
+					name="avatarUrl"
+					type="url"
+					placeholder="https://…/face.jpg"
+					class="{inputClass} mt-2"
+				/>
 			</label>
 			<label class="block">
 				<span class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase">
@@ -64,14 +90,14 @@
 					required
 					minlength="8"
 					autocomplete="new-password"
-					class="text-mono mt-2 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
+					class="{inputClass} mt-2"
 				/>
 			</label>
 
 			{#if form?.error}
 				<p class="text-mono text-xs text-[color:var(--color-danger)]">{form.error}</p>
 			{:else if form?.ok}
-				<p class="text-mono text-xs text-[color:var(--color-accent)]">account created.</p>
+				<p class="text-mono text-xs text-[color:var(--color-accent)]">saved.</p>
 			{/if}
 
 			<button
@@ -93,9 +119,10 @@
 		<ul class="space-y-2">
 			{#each data.users as u (u.id)}
 				<li
-					class="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-4"
+					class="flex flex-wrap items-center gap-4 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-4"
 				>
-					<div>
+					{@render avatar(u.name, u.avatarUrl, 'h-11 w-11')}
+					<div class="min-w-0 flex-1">
 						<p class="text-display text-xl italic">
 							{u.name}
 							{#if u.isAdmin}
@@ -109,6 +136,27 @@
 						<p class="text-mono text-xs text-[color:var(--color-muted)]">
 							@{u.username} · joined {fmtDate(u.createdAt)}
 						</p>
+						<form
+							method="POST"
+							action="?/setAvatar"
+							use:enhance
+							class="mt-2 flex items-center gap-2"
+						>
+							<input type="hidden" name="id" value={u.id} />
+							<input
+								name="avatarUrl"
+								type="url"
+								value={u.avatarUrl ?? ''}
+								placeholder="avatar url"
+								class="text-mono min-w-0 flex-1 rounded border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1 text-xs outline-none focus:border-[color:var(--color-accent)]"
+							/>
+							<button
+								type="submit"
+								class="text-mono shrink-0 rounded border border-[color:var(--color-border)] px-2 py-1 text-[0.65rem] tracking-[0.15em] text-[color:var(--color-muted)] uppercase transition hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"
+							>
+								save
+							</button>
+						</form>
 					</div>
 					{#if !u.isAdmin}
 						<form

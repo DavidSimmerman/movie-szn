@@ -18,12 +18,15 @@
 	<SiteHeader />
 
 	<div class="relative mx-auto max-w-[72rem] px-6 pt-10 pb-12">
-		<p class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase">
-			◦ the archive ◦
-		</p>
-		<h1 class="text-display mt-2 text-6xl italic">every review</h1>
-
-		<div class="mt-6">
+		<div class="flex flex-wrap items-end justify-between gap-4">
+			<div>
+				<p
+					class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
+				>
+					◦ the archive ◦
+				</p>
+				<h1 class="text-display mt-2 text-6xl italic">every review</h1>
+			</div>
 			<UserPicker label="reviews by" />
 		</div>
 

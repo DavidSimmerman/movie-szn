@@ -17,17 +17,20 @@
 	<SiteHeader />
 
 	<div class="relative mx-auto max-w-[56rem] px-6 pt-10 pb-12">
-		<p class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase">
-			◦ by the year ◦
-		</p>
-		<h1 class="text-display mt-2 text-6xl italic">seasons</h1>
+		<div class="flex flex-wrap items-end justify-between gap-4">
+			<div>
+				<p
+					class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
+				>
+					◦ by the year ◦
+				</p>
+				<h1 class="text-display mt-2 text-6xl italic">seasons</h1>
+			</div>
+			<UserPicker label="seasons by" />
+		</div>
 		<p class="mt-3 max-w-xl text-[color:var(--color-muted)]">
 			every movie season, april through august. the core of the site.
 		</p>
-
-		<div class="mt-6">
-			<UserPicker label="seasons by" />
-		</div>
 
 		{#if data.seasons.length === 0}
 			<p class="mt-12 text-[color:var(--color-muted)]">no seasons yet.</p>

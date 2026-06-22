@@ -20,7 +20,12 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 	if (!review) throw error(404, 'no review yet for this movie');
 
 	const reviewers = await db
-		.select({ id: users.id, username: users.username, name: users.name })
+		.select({
+			id: users.id,
+			username: users.username,
+			name: users.name,
+			avatarUrl: users.avatarUrl
+		})
 		.from(reviews)
 		.innerJoin(users, eq(users.id, reviews.userId))
 		.where(eq(reviews.movieId, movie.id))

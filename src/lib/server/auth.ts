@@ -35,7 +35,13 @@ export async function authenticate(username: string, password: string): Promise<
 	const hash = user?.passwordHash ?? DUMMY_HASH;
 	const ok = await verify(hash, password).catch(() => false);
 	if (!ok || !user) return null;
-	return { id: user.id, username: user.username, name: user.name, isAdmin: user.isAdmin };
+	return {
+		id: user.id,
+		username: user.username,
+		name: user.name,
+		avatarUrl: user.avatarUrl,
+		isAdmin: user.isAdmin
+	};
 }
 
 export async function createSession(userId: string): Promise<{ id: string; expiresAt: Date }> {
@@ -55,6 +61,7 @@ export async function validateSession(id: string | undefined): Promise<PublicUse
 			id: users.id,
 			username: users.username,
 			name: users.name,
+			avatarUrl: users.avatarUrl,
 			isAdmin: users.isAdmin
 		})
 		.from(sessions)
@@ -67,7 +74,13 @@ export async function validateSession(id: string | undefined): Promise<PublicUse
 		await d.delete(sessions).where(eq(sessions.id, id));
 		return null;
 	}
-	return { id: row.id, username: row.username, name: row.name, isAdmin: row.isAdmin };
+	return {
+		id: row.id,
+		username: row.username,
+		name: row.name,
+		avatarUrl: row.avatarUrl,
+		isAdmin: row.isAdmin
+	};
 }
 
 export async function destroySession(id: string | undefined): Promise<void> {

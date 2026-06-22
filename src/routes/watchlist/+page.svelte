@@ -18,17 +18,20 @@
 	<SiteHeader />
 
 	<div class="relative mx-auto max-w-[56rem] px-6 pt-10 pb-12">
-		<p class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase">
-			◦ up next ◦
-		</p>
-		<h1 class="text-display mt-2 text-6xl italic">the watchlist</h1>
+		<div class="flex flex-wrap items-end justify-between gap-4">
+			<div>
+				<p
+					class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
+				>
+					◦ up next ◦
+				</p>
+				<h1 class="text-display mt-2 text-6xl italic">the watchlist</h1>
+			</div>
+			<UserPicker label="watchlist of" />
+		</div>
 		<p class="mt-3 max-w-xl text-[color:var(--color-muted)]">
 			what {who} is planning to watch, in order. no promises on timing.
 		</p>
-
-		<div class="mt-6">
-			<UserPicker label="watchlist of" />
-		</div>
 
 		{#if data.items.length === 0}
 			<p class="mt-12 text-[color:var(--color-muted)]">nothing queued up yet.</p>

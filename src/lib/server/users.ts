@@ -2,12 +2,13 @@ import { asc, eq } from 'drizzle-orm';
 import { db } from './db';
 import { users, type User } from './db/schema';
 
-export type PublicUser = Pick<User, 'id' | 'username' | 'name' | 'isAdmin'>;
+export type PublicUser = Pick<User, 'id' | 'username' | 'name' | 'isAdmin' | 'avatarUrl'>;
 
 const cols = {
 	id: users.id,
 	username: users.username,
 	name: users.name,
+	avatarUrl: users.avatarUrl,
 	isAdmin: users.isAdmin
 };
 
