@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$server/db';
 import { seasons } from '$db/schema';
@@ -13,16 +13,21 @@ const createSchema = z.object({
 	endsAt: z.string().nullish()
 });
 
-export const load: PageServerLoad = async () => {
-	if (!db) return { seasons: [], nextYear: new Date().getFullYear() };
-	const rows = await db.select().from(seasons).orderBy(desc(seasons.startsAt));
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!db || !locals.user) return { seasons: [], nextYear: new Date().getFullYear() };
+	const rows = await db
+		.select()
+		.from(seasons)
+		.where(eq(seasons.userId, locals.user.id))
+		.orderBy(desc(seasons.startsAt));
 	const nextYear = new Date().getFullYear();
 	return { seasons: rows, nextYear };
 };
 
 export const actions: Actions = {
-	create: async ({ request }) => {
+	create: async ({ request, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
 		const body = await request.formData();
 		const parsed = createSchema.safeParse({
 			year: body.get('year'),
@@ -35,6 +40,7 @@ export const actions: Actions = {
 		const bounds = defaultSeasonBounds(parsed.data.year);
 		try {
 			await db.insert(seasons).values({
+				userId: locals.user.id,
 				slug: defaultSeasonSlug(parsed.data.year),
 				name: parsed.data.name || defaultSeasonName(parsed.data.year),
 				startsAt: parsed.data.startsAt || bounds.startsAt,
@@ -48,12 +54,13 @@ export const actions: Actions = {
 		}
 	},
 
-	remove: async ({ request }) => {
+	remove: async ({ request, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
 		const body = await request.formData();
 		const id = body.get('id');
 		if (typeof id !== 'string') return fail(400);
-		await db.delete(seasons).where(eq(seasons.id, id));
+		await db.delete(seasons).where(and(eq(seasons.id, id), eq(seasons.userId, locals.user.id)));
 		return { ok: true };
 	}
 };

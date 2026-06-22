@@ -1,16 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
-	const nav = [
+	const nav = $derived([
 		{ href: '/admin', label: 'dashboard' },
 		{ href: '/admin/movies', label: 'movies' },
 		{ href: '/admin/reviews', label: 'reviews' },
 		{ href: '/admin/watchlist', label: 'watchlist' },
-		{ href: '/admin/suggestions', label: 'suggestions' },
-		{ href: '/admin/seasons', label: 'seasons' }
-	];
+		{ href: '/admin/seasons', label: 'seasons' },
+		...(data.user.isAdmin
+			? [
+					{ href: '/admin/suggestions', label: 'suggestions' },
+					{ href: '/admin/users', label: 'users' }
+				]
+			: [])
+	]);
 
 	const current = $derived(page.url.pathname);
 </script>
@@ -28,14 +33,23 @@
 					admin
 				</span>
 			</a>
-			<form method="POST" action="/logout">
-				<button
-					class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-text)]"
-					type="submit"
+			<div class="flex items-center gap-4">
+				<span
+					class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
 				>
-					log out
-				</button>
-			</form>
+					{data.user.name}{#if data.user.isAdmin}<span class="text-[color:var(--color-accent)]">
+							·
+						</span>admin{/if}
+				</span>
+				<form method="POST" action="/logout">
+					<button
+						class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-text)]"
+						type="submit"
+					>
+						log out
+					</button>
+				</form>
+			</div>
 		</div>
 		<nav class="mx-auto flex max-w-[72rem] gap-6 px-6 pb-3">
 			{#each nav as item (item.href)}

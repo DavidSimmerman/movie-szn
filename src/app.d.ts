@@ -2,7 +2,8 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			admin: boolean;
+			user: import('$lib/server/users').PublicUser | null;
+			viewUsername: string | null;
 			visitorId: string;
 		}
 		// interface PageData {}

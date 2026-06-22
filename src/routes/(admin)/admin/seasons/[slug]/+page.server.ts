@@ -4,9 +4,12 @@ import { db } from '$server/db';
 import { movies, movieSeasons, reviews, seasons } from '$db/schema';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!db) throw error(503);
-	const season = await db.query.seasons.findFirst({ where: eq(seasons.slug, params.slug) });
+	if (!locals.user) throw error(401);
+	const season = await db.query.seasons.findFirst({
+		where: and(eq(seasons.slug, params.slug), eq(seasons.userId, locals.user.id))
+	});
 	if (!season) throw error(404, 'season not found');
 
 	const items = await db
@@ -19,7 +22,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			tagged: sql<boolean>`${movieSeasons.movieId} is not null`
 		})
 		.from(movies)
-		.innerJoin(reviews, eq(reviews.movieId, movies.id))
+		.innerJoin(reviews, and(eq(reviews.movieId, movies.id), eq(reviews.userId, locals.user.id)))
 		.leftJoin(
 			movieSeasons,
 			and(eq(movieSeasons.movieId, movies.id), eq(movieSeasons.seasonId, season.id))
@@ -30,14 +33,17 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	toggle: async ({ request, params }) => {
+	toggle: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
 		const body = await request.formData();
 		const movieId = body.get('movieId');
 		const tagged = body.get('tagged') === 'true';
 		if (typeof movieId !== 'string') return fail(400, { error: 'missing movieId' });
 
-		const season = await db.query.seasons.findFirst({ where: eq(seasons.slug, params.slug) });
+		const season = await db.query.seasons.findFirst({
+			where: and(eq(seasons.slug, params.slug), eq(seasons.userId, locals.user.id))
+		});
 		if (!season) return fail(404, { error: 'season not found' });
 
 		if (tagged) {
@@ -45,8 +51,10 @@ export const actions: Actions = {
 				.delete(movieSeasons)
 				.where(and(eq(movieSeasons.movieId, movieId), eq(movieSeasons.seasonId, season.id)));
 		} else {
-			const reviewed = await db.query.reviews.findFirst({ where: eq(reviews.movieId, movieId) });
-			if (!reviewed) return fail(400, { error: 'movie must be reviewed before tagging' });
+			const reviewed = await db.query.reviews.findFirst({
+				where: and(eq(reviews.movieId, movieId), eq(reviews.userId, locals.user.id))
+			});
+			if (!reviewed) return fail(400, { error: 'review the movie first' });
 			await db.insert(movieSeasons).values({ movieId, seasonId: season.id }).onConflictDoNothing();
 		}
 		return { ok: true };

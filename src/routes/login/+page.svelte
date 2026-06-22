@@ -28,6 +28,22 @@
 
 		<label
 			class="text-mono mb-2 block text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
+			for="username"
+		>
+			username
+		</label>
+		<input
+			id="username"
+			name="username"
+			type="text"
+			autocomplete="username"
+			autocapitalize="none"
+			bind:value={$form.username}
+			class="text-mono mb-4 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 transition outline-none focus:border-[color:var(--color-accent)]"
+		/>
+
+		<label
+			class="text-mono mb-2 block text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
 			for="pw"
 		>
 			password
@@ -42,6 +58,9 @@
 		/>
 		<input type="hidden" name="next" bind:value={$form.next} />
 
+		{#if $errors.username}
+			<p class="text-mono mt-2 text-xs text-[color:var(--color-danger)]">{$errors.username}</p>
+		{/if}
 		{#if $errors.password}
 			<p class="text-mono mt-2 text-xs text-[color:var(--color-danger)]">{$errors.password}</p>
 		{/if}

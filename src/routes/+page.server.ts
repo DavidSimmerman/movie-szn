@@ -1,11 +1,16 @@
-import { count, desc, eq } from 'drizzle-orm';
+import { redirect } from '@sveltejs/kit';
+import { and, count, desc, eq } from 'drizzle-orm';
 import { db } from '$server/db';
 import { movies, movieSeasons, reviews } from '$db/schema';
 import { currentSeason } from '$server/seasons';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	if (!db)
+export const load: PageServerLoad = async ({ parent, locals }) => {
+	// The homepage is the owner's front page; a bare /user/<name> lands on their reviews.
+	if (locals.viewUsername) throw redirect(307, `/user/${locals.viewUsername}/reviews`);
+
+	const { owner } = await parent();
+	if (!db || !owner)
 		return { latest: [], currentSeason: null, seasonMovies: [], seasonReviewCount: 0 };
 
 	const latest = await db
@@ -20,10 +25,11 @@ export const load: PageServerLoad = async () => {
 		})
 		.from(reviews)
 		.innerJoin(movies, eq(movies.id, reviews.movieId))
+		.where(eq(reviews.userId, owner.id))
 		.orderBy(desc(reviews.createdAt))
 		.limit(10);
 
-	const season = await currentSeason();
+	const season = await currentSeason(owner.id);
 	let seasonMovies: Array<{ title: string; year: number; slug: string }> = [];
 	let seasonReviewCount = 0;
 	if (season) {
@@ -42,7 +48,7 @@ export const load: PageServerLoad = async () => {
 			.select({ value: count() })
 			.from(reviews)
 			.innerJoin(movieSeasons, eq(movieSeasons.movieId, reviews.movieId))
-			.where(eq(movieSeasons.seasonId, season.id));
+			.where(and(eq(movieSeasons.seasonId, season.id), eq(reviews.userId, owner.id)));
 		seasonReviewCount = row?.value ?? 0;
 	}
 

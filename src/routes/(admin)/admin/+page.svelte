@@ -1,5 +1,13 @@
 <script lang="ts">
 	let { data } = $props();
+
+	const cards = $derived([
+		['movies', data.counts.movies],
+		['reviews', data.counts.reviews],
+		['seasons', data.counts.seasons],
+		['watch list', data.counts.watchList],
+		...(data.isAdmin ? ([['pending suggestions', data.counts.pendingSuggestions]] as const) : [])
+	] as const);
 </script>
 
 <svelte:head>
@@ -21,7 +29,7 @@
 	</div>
 {:else}
 	<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-		{#each [['movies', data.counts.movies], ['reviews', data.counts.reviews], ['pending suggestions', data.counts.pendingSuggestions], ['watch list', data.counts.watchList]] as const as [label, value] (label)}
+		{#each cards as [label, value] (label)}
 			<article
 				class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
 			>

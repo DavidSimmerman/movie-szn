@@ -7,7 +7,7 @@ import { buildMovieSlug } from '$server/slug';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-	if (!locals.admin) throw error(403);
+	if (!locals.user) throw error(403);
 	if (!db) throw error(503);
 
 	const body = await request.json().catch(() => null);

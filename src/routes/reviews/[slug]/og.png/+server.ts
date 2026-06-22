@@ -2,9 +2,10 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { error, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '$server/db';
 import { movies, reviews } from '$db/schema';
+import { getViewUser } from '$server/users';
 import type { RequestHandler } from './$types';
 
 const cacheDir = resolve(process.env.OG_CACHE_DIR ?? '/app/og-cache');
@@ -13,7 +14,7 @@ const selfOrigin = process.env.OG_SELF_ORIGIN ?? `http://127.0.0.1:${process.env
 // Coalesce concurrent generations of the same file (e.g. two crawlers at once).
 const inflight = new Map<string, Promise<void>>();
 
-function generate(slug: string, outPath: string): Promise<void> {
+function generate(ogPagePath: string, outPath: string): Promise<void> {
 	const existing = inflight.get(outPath);
 	if (existing) return existing;
 	const run = new Promise<void>((res, rej) => {
@@ -21,7 +22,7 @@ function generate(slug: string, outPath: string): Promise<void> {
 			stdio: 'inherit',
 			env: {
 				...process.env,
-				OG_SCREENSHOT_URL: `${selfOrigin}/reviews/${encodeURIComponent(slug)}/og`,
+				OG_SCREENSHOT_URL: `${selfOrigin}${ogPagePath}`,
 				OG_OUT: outPath
 			}
 		});
@@ -32,8 +33,11 @@ function generate(slug: string, outPath: string): Promise<void> {
 	return run;
 }
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, locals, url }) => {
 	if (!db) throw error(503, 'database not configured');
+
+	const viewUser = await getViewUser(locals.viewUsername);
+	if (!viewUser) throw error(404, 'not found');
 
 	const movie = await db.query.movies.findFirst({
 		where: eq(movies.slug, params.slug),
@@ -42,15 +46,18 @@ export const GET: RequestHandler = async ({ params }) => {
 	if (!movie) throw error(404, 'not found');
 
 	const review = await db.query.reviews.findFirst({
-		where: eq(reviews.movieId, movie.id),
+		where: and(eq(reviews.movieId, movie.id), eq(reviews.userId, viewUser.id)),
 		columns: { updatedAt: true }
 	});
 	if (!review) throw error(404, 'no review yet for this movie');
 
-	// URL → filesystem path: keep only slug-safe chars (slugs already are, but this is a trust boundary).
+	// URL → filesystem path: keep only slug-safe chars (these are trust boundaries).
 	const safeSlug = params.slug.replace(/[^a-z0-9-]/gi, '');
+	const safeUser = viewUser.username.replace(/[^a-z0-9-]/gi, '');
 	const version = review.updatedAt.getTime();
-	const outPath = resolve(cacheDir, `review-${safeSlug}-${version}.png`);
+	const outPath = resolve(cacheDir, `review-${safeUser}-${safeSlug}-${version}.png`);
+	// `url.pathname` keeps any /user/<name> prefix; strip `.png` to get the og page to shoot.
+	const ogPagePath = url.pathname.replace(/\.png$/, '');
 
 	let png: Buffer;
 	try {
@@ -59,7 +66,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
 		try {
 			await mkdir(cacheDir, { recursive: true });
-			await generate(params.slug, outPath);
+			await generate(ogPagePath, outPath);
 			png = await readFile(outPath);
 		} catch (genErr) {
 			// generation failed (e.g. browser crash) — fall back to the site card, not a broken preview

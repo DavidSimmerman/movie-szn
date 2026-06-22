@@ -2,18 +2,23 @@ import { fail, redirect } from '@sveltejs/kit';
 import { superValidate, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
-import { SESSION_COOKIE, createSession, verifyAdminPassword } from '$server/auth';
+import { SESSION_COOKIE, authenticate, createSession } from '$server/auth';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z.object({
+	username: z.string().min(1, 'username required'),
 	password: z.string().min(1, 'password required'),
 	next: z.string().optional()
 });
 
+/** Only allow same-origin relative paths as a post-login redirect target. */
+function safeNext(next: string | undefined): string {
+	return next && next.startsWith('/') && !next.startsWith('//') ? next : '/admin';
+}
+
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (locals.admin) {
-		const next = url.searchParams.get('next') ?? '/admin';
-		throw redirect(303, next);
+	if (locals.user) {
+		throw redirect(303, safeNext(url.searchParams.get('next') ?? undefined));
 	}
 	const form = await superValidate(
 		{ next: url.searchParams.get('next') ?? '/admin' },
@@ -27,12 +32,12 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(schema));
 		if (!form.valid) return fail(400, { form });
 
-		const ok = await verifyAdminPassword(form.data.password);
-		if (!ok) {
-			return message(form, 'incorrect password', { status: 401 });
+		const user = await authenticate(form.data.username, form.data.password);
+		if (!user) {
+			return message(form, 'incorrect username or password', { status: 401 });
 		}
 
-		const { id, expiresAt } = await createSession();
+		const { id, expiresAt } = await createSession(user.id);
 		cookies.set(SESSION_COOKIE, id, {
 			path: '/',
 			httpOnly: true,
@@ -41,6 +46,6 @@ export const actions: Actions = {
 			expires: expiresAt
 		});
 
-		throw redirect(303, form.data.next || '/admin');
+		throw redirect(303, safeNext(form.data.next));
 	}
 };

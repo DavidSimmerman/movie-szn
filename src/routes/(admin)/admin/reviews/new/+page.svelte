@@ -19,14 +19,16 @@
 	const score = $derived(combinedScore(ratings));
 	const flex = $derived(isFlex(score));
 
+	const factorLabel = $derived(`${data.factorName.toLowerCase()} factor`);
+
 	const CATEGORY_KEYS = ['production', 'acting', 'storyPlot', 'intent', 'daveFactor'] as const;
-	const CATEGORY_LABELS: Record<(typeof CATEGORY_KEYS)[number], string> = {
+	const CATEGORY_LABELS = $derived<Record<(typeof CATEGORY_KEYS)[number], string>>({
 		production: 'production',
 		acting: 'acting',
 		storyPlot: 'story / plot',
 		intent: 'intent',
-		daveFactor: 'dave factor'
-	};
+		daveFactor: factorLabel
+	});
 </script>
 
 <svelte:head><title>new review · admin</title></svelte:head>
@@ -73,7 +75,7 @@
 		<div
 			class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
 		>
-			<RatingFilmstrip {ratings} />
+			<RatingFilmstrip {ratings} {factorLabel} />
 		</div>
 	</section>
 

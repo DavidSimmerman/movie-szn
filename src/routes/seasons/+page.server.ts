@@ -3,8 +3,9 @@ import { db } from '$server/db';
 import { movieSeasons, seasons } from '$db/schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	if (!db) return { seasons: [] };
+export const load: PageServerLoad = async ({ parent }) => {
+	const { viewUser } = await parent();
+	if (!db || !viewUser) return { seasons: [] };
 
 	const rows = await db
 		.select({
@@ -17,6 +18,7 @@ export const load: PageServerLoad = async () => {
 		})
 		.from(seasons)
 		.leftJoin(movieSeasons, eq(movieSeasons.seasonId, seasons.id))
+		.where(eq(seasons.userId, viewUser.id))
 		.groupBy(seasons.id)
 		.orderBy(desc(seasons.startsAt));
 

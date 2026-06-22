@@ -25,7 +25,7 @@ async function nextHonorableOrder(categoryId: string) {
 	return (row?.m ?? 0) + GAP;
 }
 
-async function reviewEligible(reviewId: string, seasonId: string) {
+async function reviewEligible(reviewId: string, seasonId: string, userId: string) {
 	const rows = await db!
 		.select({ id: reviews.id })
 		.from(reviews)
@@ -33,13 +33,16 @@ async function reviewEligible(reviewId: string, seasonId: string) {
 			movieSeasons,
 			and(eq(movieSeasons.movieId, reviews.movieId), eq(movieSeasons.seasonId, seasonId))
 		)
-		.where(eq(reviews.id, reviewId))
+		.where(and(eq(reviews.id, reviewId), eq(reviews.userId, userId)))
 		.limit(1);
 	return rows.length > 0;
 }
 
-async function loadSeason(slug: string) {
-	return db!.query.seasons.findFirst({ where: eq(seasons.slug, slug) });
+async function loadSeason(slug: string, userId: string | undefined) {
+	if (!userId) return undefined;
+	return db!.query.seasons.findFirst({
+		where: and(eq(seasons.slug, slug), eq(seasons.userId, userId))
+	});
 }
 
 async function ownsCategory(categoryId: string, seasonId: string) {
@@ -49,9 +52,9 @@ async function ownsCategory(categoryId: string, seasonId: string) {
 	return !!row;
 }
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!db) throw error(503);
-	const season = await loadSeason(params.slug);
+	const season = await loadSeason(params.slug, locals.user?.id);
 	if (!season) throw error(404, 'season not found');
 
 	const categories = await db
@@ -109,6 +112,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			movieSeasons,
 			and(eq(movieSeasons.movieId, movies.id), eq(movieSeasons.seasonId, season.id))
 		)
+		.where(eq(reviews.userId, season.userId))
 		.orderBy(desc(reviews.combinedScore), asc(movies.title));
 
 	return {
@@ -122,9 +126,9 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	createCategory: async ({ request, params }) => {
+	createCategory: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -156,9 +160,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	updateCategory: async ({ request, params }) => {
+	updateCategory: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -189,9 +193,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	deleteCategory: async ({ request, params }) => {
+	deleteCategory: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const id = body.get('id');
@@ -201,9 +205,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	moveCategory: async ({ request, params }) => {
+	moveCategory: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -252,9 +256,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	reorderCategories: async ({ request, params }) => {
+	reorderCategories: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const idsRaw = body.get('ids');
@@ -282,9 +286,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	setWinner: async ({ request, params }) => {
+	setWinner: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -309,7 +313,7 @@ export const actions: Actions = {
 		if (cat.allowsMultiple) {
 			return fail(400, { error: 'this category only supports flat picks — use add pick' });
 		}
-		if (!(await reviewEligible(parsed.data.reviewId, season.id))) {
+		if (!(await reviewEligible(parsed.data.reviewId, season.id, season.userId))) {
 			return fail(400, { error: 'that review is not tagged to this season' });
 		}
 
@@ -383,9 +387,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	clearWinner: async ({ request, params }) => {
+	clearWinner: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -405,9 +409,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	addHonorable: async ({ request, params }) => {
+	addHonorable: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -423,7 +427,7 @@ export const actions: Actions = {
 			});
 		if (!parsed.success) return fail(400, { error: 'invalid input' });
 		if (!(await ownsCategory(parsed.data.categoryId, season.id))) return fail(404);
-		if (!(await reviewEligible(parsed.data.reviewId, season.id))) {
+		if (!(await reviewEligible(parsed.data.reviewId, season.id, season.userId))) {
 			return fail(400, { error: 'that review is not tagged to this season' });
 		}
 
@@ -442,9 +446,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	moveHonorable: async ({ request, params }) => {
+	moveHonorable: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -491,9 +495,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	updateNote: async ({ request, params }) => {
+	updateNote: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const parsed = z
@@ -517,9 +521,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	removeWinner: async ({ request, params }) => {
+	removeWinner: async ({ request, params, locals }) => {
 		if (!db) return fail(503);
-		const season = await loadSeason(params.slug);
+		const season = await loadSeason(params.slug, locals.user?.id);
 		if (!season) return fail(404);
 		const body = await request.formData();
 		const id = body.get('id');

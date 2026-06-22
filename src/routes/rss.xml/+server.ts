@@ -2,6 +2,7 @@ import { env } from '$env/dynamic/private';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '$server/db';
 import { movies, reviews } from '$db/schema';
+import { getViewUser } from '$server/users';
 import { toNumber, formatPublicScore } from '$lib/ratings';
 
 function escapeXml(s: string): string {
@@ -17,7 +18,8 @@ export const GET = async ({ url }) => {
 	const origin = env.ORIGIN || url.origin;
 
 	let body = '';
-	if (db) {
+	const owner = await getViewUser(null);
+	if (db && owner) {
 		const rows = await db
 			.select({
 				slug: movies.slug,
@@ -29,6 +31,7 @@ export const GET = async ({ url }) => {
 			})
 			.from(reviews)
 			.innerJoin(movies, eq(movies.id, reviews.movieId))
+			.where(eq(reviews.userId, owner.id))
 			.orderBy(desc(reviews.createdAt))
 			.limit(40);
 

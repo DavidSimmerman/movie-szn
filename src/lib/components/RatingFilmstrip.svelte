@@ -4,9 +4,11 @@
 	type Props = {
 		ratings: RatingBreakdown;
 		compact?: boolean;
+		/** Overrides the "dave factor" label with the review author's, e.g. "rob factor". */
+		factorLabel?: string;
 	};
 
-	const { ratings, compact = false }: Props = $props();
+	const { ratings, compact = false, factorLabel }: Props = $props();
 
 	function cells(value: number) {
 		const out: number[] = [];
@@ -86,7 +88,7 @@
 					class:text-xs={!compact}
 					class:text-[0.65rem]={compact}
 				>
-					{cat.label}
+					{cat.key === 'daveFactor' && factorLabel ? factorLabel : cat.label}
 				</p>
 				<p
 					class="text-display leading-none font-semibold text-[color:var(--color-text)] tabular-nums"

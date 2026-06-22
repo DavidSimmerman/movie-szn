@@ -8,13 +8,17 @@ import type { Actions, PageServerLoad } from './$types';
 
 const GAP = 1000;
 
-async function nextPosition() {
-	const [row] = await db!.select({ m: max(watchList.position) }).from(watchList);
+async function nextPosition(userId: string) {
+	const [row] = await db!
+		.select({ m: max(watchList.position) })
+		.from(watchList)
+		.where(eq(watchList.userId, userId));
 	return (row?.m ?? 0) + GAP;
 }
 
-export const load: PageServerLoad = async () => {
-	if (!db) return { items: [], candidates: [] };
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!db || !locals.user) return { items: [], candidates: [] };
+	const uid = locals.user.id;
 
 	const items = await db
 		.select({
@@ -28,21 +32,13 @@ export const load: PageServerLoad = async () => {
 		})
 		.from(watchList)
 		.innerJoin(movies, eq(movies.id, watchList.movieId))
+		.where(eq(watchList.userId, uid))
 		.orderBy(asc(watchList.position));
 
-	const candidates = await db
-		.select({
-			id: movies.id,
-			title: movies.title,
-			year: movies.year
-		})
-		.from(movies)
-		.leftJoin(watchList, eq(watchList.movieId, movies.id))
-		.where(eq(watchList.movieId, movies.id))
-		.orderBy(asc(movies.title));
-
-	// Simpler: just fetch movies NOT already on the list
-	const onListRaw = await db.select({ movieId: watchList.movieId }).from(watchList);
+	const onListRaw = await db
+		.select({ movieId: watchList.movieId })
+		.from(watchList)
+		.where(eq(watchList.userId, uid));
 	const onList = new Set(onListRaw.map((r) => r.movieId));
 	const allMovies = await db
 		.select({ id: movies.id, title: movies.title, year: movies.year })
@@ -54,18 +50,20 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	add: async ({ request }) => {
+	add: async ({ request, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
 		const body = await request.formData();
 		const parsed = z
 			.object({ movieId: z.uuid(), notes: z.string().optional() })
 			.safeParse({ movieId: body.get('movieId'), notes: body.get('notes') ?? '' });
 		if (!parsed.success) return fail(400);
 
-		const nextPos = await nextPosition();
+		const nextPos = await nextPosition(locals.user.id);
 		await db
 			.insert(watchList)
 			.values({
+				userId: locals.user.id,
 				movieId: parsed.data.movieId,
 				position: nextPos,
 				notes: parsed.data.notes || null
@@ -74,8 +72,9 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	addFromTmdb: async ({ request }) => {
+	addFromTmdb: async ({ request, locals }) => {
 		if (!db) return fail(503, { error: 'database not configured' });
+		if (!locals.user) return fail(401);
 		const body = await request.formData();
 		const parsed = z
 			.object({
@@ -97,10 +96,11 @@ export const actions: Actions = {
 			return fail(502, { error: err instanceof Error ? err.message : 'tmdb fetch failed' });
 		}
 
-		const nextPos = await nextPosition();
+		const nextPos = await nextPosition(locals.user.id);
 		await db
 			.insert(watchList)
 			.values({
+				userId: locals.user.id,
 				movieId: movie.id,
 				position: nextPos,
 				notes: parsed.data.notes?.trim() || null
@@ -110,17 +110,22 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	remove: async ({ request }) => {
+	remove: async ({ request, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
 		const body = await request.formData();
 		const id = body.get('id');
 		if (typeof id !== 'string') return fail(400);
-		await db.delete(watchList).where(eq(watchList.id, id));
+		await db
+			.delete(watchList)
+			.where(and(eq(watchList.id, id), eq(watchList.userId, locals.user.id)));
 		return { ok: true };
 	},
 
-	reorder: async ({ request }) => {
+	reorder: async ({ request, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
+		const uid = locals.user.id;
 		const body = await request.formData();
 		const idsRaw = body.get('ids');
 		if (typeof idsRaw !== 'string') return fail(400, { error: 'missing ids' });
@@ -129,7 +134,10 @@ export const actions: Actions = {
 		const parsed = z.array(z.uuid()).min(1).safeParse(ids);
 		if (!parsed.success) return fail(400, { error: 'invalid ids' });
 
-		const existing = await db.select({ id: watchList.id }).from(watchList);
+		const existing = await db
+			.select({ id: watchList.id })
+			.from(watchList)
+			.where(eq(watchList.userId, uid));
 		const existingIds = new Set(existing.map((r) => r.id));
 		if (parsed.data.length !== existingIds.size) {
 			return fail(400, { error: 'id count mismatch' });
@@ -143,15 +151,17 @@ export const actions: Actions = {
 				await tx
 					.update(watchList)
 					.set({ position: (i + 1) * GAP })
-					.where(eq(watchList.id, parsed.data[i]));
+					.where(and(eq(watchList.id, parsed.data[i]), eq(watchList.userId, uid)));
 			}
 		});
 
 		return { ok: true };
 	},
 
-	move: async ({ request }) => {
+	move: async ({ request, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
+		const uid = locals.user.id;
 		const body = await request.formData();
 		const parsed = z
 			.object({
@@ -162,7 +172,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400);
 
 		const current = await db.query.watchList.findFirst({
-			where: eq(watchList.id, parsed.data.id),
+			where: and(eq(watchList.id, parsed.data.id), eq(watchList.userId, uid)),
 			columns: { id: true, position: true }
 		});
 		if (!current) return fail(404);
@@ -171,12 +181,11 @@ export const actions: Actions = {
 			const prev = await db
 				.select({ id: watchList.id, position: watchList.position })
 				.from(watchList)
-				.where(lt(watchList.position, current.position))
+				.where(and(eq(watchList.userId, uid), lt(watchList.position, current.position)))
 				.orderBy(asc(watchList.position))
 				.limit(1);
 			const above = prev[prev.length - 1];
 			if (!above) return { ok: true };
-			// swap
 			await db
 				.update(watchList)
 				.set({ position: above.position })
@@ -184,12 +193,12 @@ export const actions: Actions = {
 			await db
 				.update(watchList)
 				.set({ position: current.position })
-				.where(and(eq(watchList.id, above.id)));
+				.where(eq(watchList.id, above.id));
 		} else {
 			const next = await db
 				.select({ id: watchList.id, position: watchList.position })
 				.from(watchList)
-				.where(gt(watchList.position, current.position))
+				.where(and(eq(watchList.userId, uid), gt(watchList.position, current.position)))
 				.orderBy(asc(watchList.position))
 				.limit(1);
 			const below = next[0];

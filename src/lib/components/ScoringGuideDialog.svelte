@@ -1,6 +1,9 @@
 <script lang="ts">
 	import ScoringGuide from './ScoringGuide.svelte';
 
+	type Props = { factorLabel?: string; factorName?: string };
+	const { factorLabel, factorName }: Props = $props();
+
 	let dialog = $state<HTMLDialogElement | null>(null);
 
 	function open() {
@@ -40,7 +43,7 @@
 		>
 			✕
 		</button>
-		<ScoringGuide />
+		<ScoringGuide {factorLabel} {factorName} />
 	</div>
 </dialog>
 

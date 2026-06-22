@@ -24,7 +24,7 @@
 
 	<div class="top">
 		<div class="wordmark">movie<span class="dash"></span>szn</div>
-		<p class="kicker">◦ dave's review ◦</p>
+		<p class="kicker">◦ {data.authorName}'s review ◦</p>
 	</div>
 
 	<div class="bottom">

@@ -3,8 +3,9 @@ import { db } from '$server/db';
 import { movies, watchList } from '$db/schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	if (!db) return { items: [] };
+export const load: PageServerLoad = async ({ parent }) => {
+	const { viewUser } = await parent();
+	if (!db || !viewUser) return { items: [] };
 
 	const rows = await db
 		.select({
@@ -19,6 +20,7 @@ export const load: PageServerLoad = async () => {
 		})
 		.from(watchList)
 		.innerJoin(movies, eq(movies.id, watchList.movieId))
+		.where(eq(watchList.userId, viewUser.id))
 		.orderBy(asc(watchList.position));
 
 	return { items: rows };

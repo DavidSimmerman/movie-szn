@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import AwardsCarousel from '$lib/components/AwardsCarousel.svelte';
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
 	import PosterCard from '$lib/components/PosterCard.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import { profilePrefix } from '$lib/profile';
 	import { toNumber } from '$lib/ratings';
 
 	let { data } = $props();
+	const prefix = $derived(profilePrefix(page.url.pathname));
 
 	const rankLabel: Record<string, string> = {
 		first: 'winner',
@@ -34,7 +37,7 @@
 	<FilmGrain id="grain-season" />
 
 	<SiteHeader
-		pill={data.admin ? { href: `/admin/seasons/${data.season.slug}`, label: 'admin' } : null}
+		pill={data.canEdit ? { href: `/admin/seasons/${data.season.slug}`, label: 'admin' } : null}
 	/>
 
 	<div class="relative mx-auto max-w-[72rem] px-6 pt-10 pb-12">
@@ -63,7 +66,7 @@
 				<ul class="awards-preview__grid awards-preview__desktop">
 					{#each arrangedPicks() as { pick, tier } (pick.categoryId)}
 						<li class="awards-preview__pick awards-preview__pick--{tier}">
-							<a href="/reviews/{pick.movieSlug}" class="awards-preview__card">
+							<a href="{prefix}/reviews/{pick.movieSlug}" class="awards-preview__card">
 								{#if pick.posterUrl}
 									<img
 										src={pick.posterUrl}
@@ -85,7 +88,7 @@
 					{/each}
 				</ul>
 
-				<a href="/seasons/{data.season.slug}/awards" class="awards-preview__cta">
+				<a href="{prefix}/seasons/{data.season.slug}/awards" class="awards-preview__cta">
 					<span>See all awards</span>
 					<span aria-hidden="true" class="awards-preview__arrow">→</span>
 				</a>

@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import UserPicker from '$lib/components/UserPicker.svelte';
+	import { profilePrefix } from '$lib/profile';
 
 	let { data } = $props();
+	const prefix = $derived(profilePrefix(page.url.pathname));
 </script>
 
 <svelte:head><title>seasons · movie-szn</title></svelte:head>
@@ -21,6 +25,10 @@
 			every movie season, april through august. the core of the site.
 		</p>
 
+		<div class="mt-6">
+			<UserPicker label="seasons by" />
+		</div>
+
 		{#if data.seasons.length === 0}
 			<p class="mt-12 text-[color:var(--color-muted)]">no seasons yet.</p>
 		{:else}
@@ -28,7 +36,7 @@
 				{#each data.seasons as s (s.id)}
 					<li>
 						<a
-							href="/seasons/{s.slug}"
+							href="{prefix}/seasons/{s.slug}"
 							class="block rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6 transition hover:border-[color:var(--color-accent)]"
 						>
 							<p

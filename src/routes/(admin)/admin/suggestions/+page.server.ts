@@ -1,4 +1,4 @@
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$server/db';
@@ -7,7 +7,8 @@ import type { Actions, PageServerLoad } from './$types';
 
 const statusSchema = z.enum(['pending', 'watching', 'added', 'declined']);
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.user?.isAdmin) throw error(403, 'admins only');
 	if (!db) return { suggestions: [] };
 	const rows = await db
 		.select()
@@ -37,7 +38,8 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	setStatus: async ({ request }) => {
+	setStatus: async ({ request, locals }) => {
+		if (!locals.user?.isAdmin) return fail(403);
 		if (!db) return fail(503);
 		const body = await request.formData();
 		const parsed = z
@@ -50,7 +52,8 @@ export const actions: Actions = {
 			.where(eq(suggestions.id, parsed.data.id));
 		return { ok: true };
 	},
-	remove: async ({ request }) => {
+	remove: async ({ request, locals }) => {
+		if (!locals.user?.isAdmin) return fail(403);
 		if (!db) return fail(503);
 		const body = await request.formData();
 		const id = body.get('id');

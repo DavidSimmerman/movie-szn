@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { profilePrefix } from '$lib/profile';
+
 	type MarqueeItem = { title: string; year: number; slug: string };
 
 	type Props = {
@@ -7,6 +10,7 @@
 	};
 
 	const { seasonName, items }: Props = $props();
+	const prefix = $derived(profilePrefix(page.url.pathname));
 
 	// duplicate so the scroll loops seamlessly
 	const doubled = $derived([...items, ...items]);
@@ -23,7 +27,10 @@
 	<div class="marquee-wrap pl-[11rem] sm:pl-[14rem]">
 		<div class="marquee-track text-display flex gap-10 text-2xl whitespace-nowrap italic">
 			{#each doubled as item, i (i + '-' + item.slug)}
-				<a href="/reviews/{item.slug}" class="transition hover:text-[color:var(--color-accent)]">
+				<a
+					href="{prefix}/reviews/{item.slug}"
+					class="transition hover:text-[color:var(--color-accent)]"
+				>
 					{item.title}
 					<span class="text-mono text-sm text-[color:var(--color-muted)]">{item.year}</span>
 				</a>

@@ -43,6 +43,13 @@
       "when": 1776785800000,
       "tag": "0005_voter_names",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782149615171,
+      "tag": "0006_multi_user",
+      "breakpoints": true
     }
   ]
 }

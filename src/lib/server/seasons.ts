@@ -1,14 +1,20 @@
-import { and, lte, gte, sql } from 'drizzle-orm';
+import { and, eq, lte, gte, sql } from 'drizzle-orm';
 import { db } from './db';
 import { seasons, type Season } from './db/schema';
 
-/** Returns the season that contains today's date, if any. */
-export async function currentSeason(): Promise<Season | null> {
+/** Returns the user's season that contains today's date, if any. */
+export async function currentSeason(userId: string): Promise<Season | null> {
 	if (!db) return null;
 	const rows = await db
 		.select()
 		.from(seasons)
-		.where(and(lte(seasons.startsAt, sql`current_date`), gte(seasons.endsAt, sql`current_date`)))
+		.where(
+			and(
+				eq(seasons.userId, userId),
+				lte(seasons.startsAt, sql`current_date`),
+				gte(seasons.endsAt, sql`current_date`)
+			)
+		)
 		.limit(1);
 	return rows[0] ?? null;
 }

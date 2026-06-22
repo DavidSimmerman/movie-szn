@@ -1,6 +1,9 @@
 import { env } from '$env/dynamic/private';
+import { eq } from 'drizzle-orm';
 import { db } from '$server/db';
-import { movies, seasons } from '$db/schema';
+import { movies, reviews, seasons, users } from '$db/schema';
+import { getViewUser } from '$server/users';
+import { profileHref } from '$lib/profile';
 
 export const GET = async ({ url }) => {
 	const origin = env.ORIGIN || url.origin;
@@ -12,14 +15,25 @@ export const GET = async ({ url }) => {
 		entries.push(`\t<url><loc>${origin}${p}</loc></url>`);
 	}
 
-	if (db) {
-		const movieRows = await db.select({ slug: movies.slug }).from(movies);
-		for (const m of movieRows) {
-			entries.push(`\t<url><loc>${origin}/reviews/${m.slug}</loc></url>`);
+	const owner = await getViewUser(null);
+	if (db && owner) {
+		const reviewRows = await db
+			.select({ slug: movies.slug, username: users.username })
+			.from(reviews)
+			.innerJoin(movies, eq(movies.id, reviews.movieId))
+			.innerJoin(users, eq(users.id, reviews.userId));
+		for (const r of reviewRows) {
+			const path = profileHref(`/reviews/${r.slug}`, r.username, owner.username);
+			entries.push(`\t<url><loc>${origin}${path}</loc></url>`);
 		}
-		const seasonRows = await db.select({ slug: seasons.slug }).from(seasons);
+
+		const seasonRows = await db
+			.select({ slug: seasons.slug, username: users.username })
+			.from(seasons)
+			.innerJoin(users, eq(users.id, seasons.userId));
 		for (const s of seasonRows) {
-			entries.push(`\t<url><loc>${origin}/seasons/${s.slug}</loc></url>`);
+			const path = profileHref(`/seasons/${s.slug}`, s.username, owner.username);
+			entries.push(`\t<url><loc>${origin}${path}</loc></url>`);
 		}
 	}
 

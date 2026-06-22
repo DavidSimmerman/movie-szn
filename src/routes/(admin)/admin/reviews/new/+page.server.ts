@@ -5,6 +5,8 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
 import { db } from '$server/db';
 import { movies, movieSeasons, reviews, seasons, watchList } from '$db/schema';
+import { getViewUser } from '$server/users';
+import { profileHref } from '$lib/profile';
 import type { Actions, PageServerLoad } from './$types';
 
 const rating = z.coerce.number().min(0).max(6);
@@ -20,8 +22,9 @@ const reviewSchema = z.object({
 	seasonIds: z.array(z.uuid()).default([])
 });
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
 	if (!db) throw error(503, 'database not configured');
+	if (!locals.user) throw error(401);
 	const slug = url.searchParams.get('movieSlug');
 	if (!slug) throw error(400, 'movieSlug query param required');
 	const movie = await db.query.movies.findFirst({
@@ -40,17 +43,22 @@ export const load: PageServerLoad = async ({ url }) => {
 	if (!movie) throw error(404, 'movie not found');
 
 	const existing = await db.query.reviews.findFirst({
-		where: eq(reviews.movieId, movie.id)
+		where: and(eq(reviews.movieId, movie.id), eq(reviews.userId, locals.user.id))
 	});
 
-	const allSeasons = await db.select().from(seasons).orderBy(desc(seasons.startsAt));
+	const allSeasons = await db
+		.select()
+		.from(seasons)
+		.where(eq(seasons.userId, locals.user.id))
+		.orderBy(desc(seasons.startsAt));
 	const latestSeasonId = allSeasons[0]?.id;
+	const ownSeasonIds = new Set(allSeasons.map((s) => s.id));
 
 	const taggedRows = await db
 		.select({ seasonId: movieSeasons.seasonId })
 		.from(movieSeasons)
 		.where(eq(movieSeasons.movieId, movie.id));
-	const tagged = taggedRows.map((r) => r.seasonId);
+	const tagged = taggedRows.map((r) => r.seasonId).filter((id) => ownSeasonIds.has(id));
 
 	const defaultSeasonIds = existing ? tagged : latestSeasonId ? [latestSeasonId] : [];
 
@@ -68,22 +76,32 @@ export const load: PageServerLoad = async ({ url }) => {
 		zod4(reviewSchema)
 	);
 
-	return { form, movie, editing: !!existing, seasons: allSeasons, latestSeasonId };
+	return {
+		form,
+		movie,
+		editing: !!existing,
+		seasons: allSeasons,
+		latestSeasonId,
+		factorName: locals.user.name
+	};
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals }) => {
 		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
+		const userId = locals.user.id;
 		const form = await superValidate(request, zod4(reviewSchema));
 		if (!form.valid) return fail(400, { form });
 
 		const existing = await db.query.reviews.findFirst({
-			where: eq(reviews.movieId, form.data.movieId),
+			where: and(eq(reviews.movieId, form.data.movieId), eq(reviews.userId, userId)),
 			columns: { id: true }
 		});
 
 		const values = {
 			movieId: form.data.movieId,
+			userId,
 			production: form.data.production.toFixed(2),
 			acting: form.data.acting.toFixed(2),
 			storyPlot: form.data.storyPlot.toFixed(2),
@@ -99,42 +117,67 @@ export const actions: Actions = {
 			await db.insert(reviews).values(values);
 		}
 
-		const wanted = form.data.seasonIds;
-		if (wanted.length === 0) {
-			await db.delete(movieSeasons).where(eq(movieSeasons.movieId, form.data.movieId));
-		} else {
-			await db
-				.delete(movieSeasons)
-				.where(
-					and(
-						eq(movieSeasons.movieId, form.data.movieId),
-						notInArray(movieSeasons.seasonId, wanted)
-					)
-				);
-			const existingTags = await db
-				.select({ seasonId: movieSeasons.seasonId })
-				.from(movieSeasons)
-				.where(
-					and(eq(movieSeasons.movieId, form.data.movieId), inArray(movieSeasons.seasonId, wanted))
-				);
-			const have = new Set(existingTags.map((r) => r.seasonId));
-			const toInsert = wanted.filter((id) => !have.has(id));
-			if (toInsert.length > 0) {
+		// Season tags only touch the reviewer's own seasons — never another user's.
+		const ownSeasons = await db
+			.select({ id: seasons.id })
+			.from(seasons)
+			.where(eq(seasons.userId, userId));
+		const ownSeasonIds = new Set(ownSeasons.map((s) => s.id));
+		const wanted = form.data.seasonIds.filter((id) => ownSeasonIds.has(id));
+
+		if (ownSeasonIds.size > 0) {
+			if (wanted.length === 0) {
 				await db
-					.insert(movieSeasons)
-					.values(toInsert.map((seasonId) => ({ movieId: form.data.movieId, seasonId })))
-					.onConflictDoNothing();
+					.delete(movieSeasons)
+					.where(
+						and(
+							eq(movieSeasons.movieId, form.data.movieId),
+							inArray(movieSeasons.seasonId, [...ownSeasonIds])
+						)
+					);
+			} else {
+				await db
+					.delete(movieSeasons)
+					.where(
+						and(
+							eq(movieSeasons.movieId, form.data.movieId),
+							inArray(movieSeasons.seasonId, [...ownSeasonIds]),
+							notInArray(movieSeasons.seasonId, wanted)
+						)
+					);
+				const existingTags = await db
+					.select({ seasonId: movieSeasons.seasonId })
+					.from(movieSeasons)
+					.where(
+						and(eq(movieSeasons.movieId, form.data.movieId), inArray(movieSeasons.seasonId, wanted))
+					);
+				const have = new Set(existingTags.map((r) => r.seasonId));
+				const toInsert = wanted.filter((id) => !have.has(id));
+				if (toInsert.length > 0) {
+					await db
+						.insert(movieSeasons)
+						.values(toInsert.map((seasonId) => ({ movieId: form.data.movieId, seasonId })))
+						.onConflictDoNothing();
+				}
 			}
 		}
 
-		await db.delete(watchList).where(eq(watchList.movieId, form.data.movieId));
+		await db
+			.delete(watchList)
+			.where(and(eq(watchList.userId, userId), eq(watchList.movieId, form.data.movieId)));
 
 		const movie = await db.query.movies.findFirst({
 			where: eq(movies.id, form.data.movieId),
 			columns: { slug: true }
 		});
 
-		if (movie) throw redirect(303, `/reviews/${movie.slug}`);
+		if (movie) {
+			const owner = await getViewUser(null);
+			const href = owner
+				? profileHref(`/reviews/${movie.slug}`, locals.user.username, owner.username)
+				: `/reviews/${movie.slug}`;
+			throw redirect(303, href);
+		}
 		return message(form, 'saved');
 	}
 };

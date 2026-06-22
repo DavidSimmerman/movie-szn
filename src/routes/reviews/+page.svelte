@@ -2,6 +2,7 @@
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
 	import PosterCard from '$lib/components/PosterCard.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import UserPicker from '$lib/components/UserPicker.svelte';
 	import { toNumber } from '$lib/ratings';
 
 	let { data } = $props();
@@ -21,6 +22,10 @@
 			◦ the archive ◦
 		</p>
 		<h1 class="text-display mt-2 text-6xl italic">every review</h1>
+
+		<div class="mt-6">
+			<UserPicker label="reviews by" />
+		</div>
 
 		{#if data.reviews.length === 0}
 			<p class="mt-12 text-[color:var(--color-muted)]">no reviews yet.</p>

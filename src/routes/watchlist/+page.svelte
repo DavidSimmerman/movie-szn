@@ -1,8 +1,11 @@
 <script lang="ts">
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import UserPicker from '$lib/components/UserPicker.svelte';
 
 	let { data } = $props();
+
+	const who = $derived(data.viewUser?.name ?? 'dave');
 </script>
 
 <svelte:head>
@@ -20,8 +23,12 @@
 		</p>
 		<h1 class="text-display mt-2 text-6xl italic">the watchlist</h1>
 		<p class="mt-3 max-w-xl text-[color:var(--color-muted)]">
-			what dave is planning to watch, in order. no promises on timing.
+			what {who} is planning to watch, in order. no promises on timing.
 		</p>
+
+		<div class="mt-6">
+			<UserPicker label="watchlist of" />
+		</div>
 
 		{#if data.items.length === 0}
 			<p class="mt-12 text-[color:var(--color-muted)]">nothing queued up yet.</p>

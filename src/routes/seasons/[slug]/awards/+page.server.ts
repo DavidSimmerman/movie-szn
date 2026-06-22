@@ -1,13 +1,20 @@
 import { error } from '@sveltejs/kit';
-import { asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { db } from '$server/db';
 import { awardCategories, awardWinners, movies, reviews, seasons } from '$db/schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, parent, locals }) => {
 	if (!db) throw error(503);
-	const season = await db.query.seasons.findFirst({ where: eq(seasons.slug, params.slug) });
+	const { viewUser } = await parent();
+	if (!viewUser) throw error(404, 'season not found');
+
+	const season = await db.query.seasons.findFirst({
+		where: and(eq(seasons.slug, params.slug), eq(seasons.userId, viewUser.id))
+	});
 	if (!season) throw error(404, 'season not found');
+
+	const canEdit = locals.user?.id === season.userId;
 
 	const categories = await db
 		.select()
@@ -16,7 +23,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.orderBy(asc(awardCategories.sortOrder), asc(awardCategories.createdAt));
 
 	if (categories.length === 0) {
-		return { season, categories: [] as never[], admin: locals.admin };
+		return { season, categories: [] as never[], canEdit };
 	}
 
 	const winners = await db
@@ -55,5 +62,5 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.map((c) => ({ ...c, winners: byCat.get(c.id) ?? [] }))
 		.filter((c) => c.winners.length > 0);
 
-	return { season, categories: populated, admin: locals.admin };
+	return { season, categories: populated, canEdit };
 };

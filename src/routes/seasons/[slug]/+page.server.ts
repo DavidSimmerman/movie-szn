@@ -1,14 +1,19 @@
 import { error } from '@sveltejs/kit';
-import { asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import { db } from '$server/db';
 import { awardCategories, awardWinners, movies, movieSeasons, reviews, seasons } from '$db/schema';
 import type { PageServerLoad } from './$types';
 
 const RANK_PRIORITY: Record<string, number> = { first: 0, second: 1, third: 2, honorable: 3 };
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, parent, locals }) => {
 	if (!db) throw error(503);
-	const season = await db.query.seasons.findFirst({ where: eq(seasons.slug, params.slug) });
+	const { viewUser } = await parent();
+	if (!viewUser) throw error(404, 'season not found');
+
+	const season = await db.query.seasons.findFirst({
+		where: and(eq(seasons.slug, params.slug), eq(seasons.userId, viewUser.id))
+	});
 	if (!season) throw error(404, 'season not found');
 
 	const items = await db
@@ -22,7 +27,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		})
 		.from(movieSeasons)
 		.innerJoin(movies, eq(movies.id, movieSeasons.movieId))
-		.leftJoin(reviews, eq(reviews.movieId, movies.id))
+		.leftJoin(reviews, and(eq(reviews.movieId, movies.id), eq(reviews.userId, season.userId)))
 		.where(eq(movieSeasons.seasonId, season.id))
 		.orderBy(desc(reviews.combinedScore), desc(movieSeasons.addedAt));
 
@@ -101,6 +106,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		season,
 		movies: items,
 		awardsPreview,
-		admin: locals.admin
+		canEdit: locals.user?.id === season.userId
 	};
 };

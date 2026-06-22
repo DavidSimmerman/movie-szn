@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
+	import { profilePrefix } from '$lib/profile';
 
 	type Pick = {
 		categoryId: string;
@@ -13,6 +15,7 @@
 
 	type Props = { picks: Pick[]; rankLabel: Record<string, string> };
 	const { picks, rankLabel }: Props = $props();
+	const prefix = $derived(profilePrefix(page.url.pathname));
 
 	let track: HTMLDivElement | undefined = $state();
 	let currentReal = $state(0);
@@ -112,7 +115,7 @@
 	<div bind:this={track} class="track" onscroll={onScroll} onscrollend={onScrollEnd}>
 		{#each loop as pick, i (i)}
 			<a
-				href="/reviews/{pick.movieSlug}"
+				href="{prefix}/reviews/{pick.movieSlug}"
 				class="card"
 				class:is-centered={i % realCount === currentReal}
 				aria-hidden={i < realCount || i >= realCount * 2 ? 'true' : undefined}

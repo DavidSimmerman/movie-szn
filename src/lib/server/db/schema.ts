@@ -25,6 +25,15 @@ export const suggestionStatus = pgEnum('suggestion_status', [
 ]);
 export const awardRank = pgEnum('award_rank', ['first', 'second', 'third', 'honorable']);
 
+export const users = pgTable('users', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	username: text('username').notNull().unique(),
+	name: text('name').notNull(),
+	passwordHash: text('password_hash').notNull(),
+	isAdmin: boolean('is_admin').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
 export const movies = pgTable(
 	'movies',
 	{
@@ -52,6 +61,9 @@ export const reviews = pgTable(
 		movieId: uuid('movie_id')
 			.notNull()
 			.references(() => movies.id, { onDelete: 'cascade' }),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
 		production: numeric('production', { precision: 3, scale: 2 }).notNull(),
 		acting: numeric('acting', { precision: 3, scale: 2 }).notNull(),
 		storyPlot: numeric('story_plot', { precision: 3, scale: 2 }).notNull(),
@@ -69,7 +81,7 @@ export const reviews = pgTable(
 		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},
 	(t) => [
-		uniqueIndex('reviews_movie_unique').on(t.movieId),
+		uniqueIndex('reviews_user_movie_unique').on(t.userId, t.movieId),
 		check(
 			'reviews_ratings_range',
 			sql`${t.production} BETWEEN 0 AND 6
@@ -81,14 +93,21 @@ export const reviews = pgTable(
 	]
 );
 
-export const seasons = pgTable('seasons', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	slug: text('slug').notNull().unique(),
-	name: text('name').notNull(),
-	startsAt: date('starts_at').notNull(),
-	endsAt: date('ends_at').notNull(),
-	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
-});
+export const seasons = pgTable(
+	'seasons',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		slug: text('slug').notNull(),
+		name: text('name').notNull(),
+		startsAt: date('starts_at').notNull(),
+		endsAt: date('ends_at').notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [uniqueIndex('seasons_user_slug_unique').on(t.userId, t.slug)]
+);
 
 export const movieSeasons = pgTable(
 	'movie_seasons',
@@ -108,15 +127,20 @@ export const watchList = pgTable(
 	'watch_list',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
 		movieId: uuid('movie_id')
 			.notNull()
-			.unique()
 			.references(() => movies.id, { onDelete: 'cascade' }),
 		position: integer('position').notNull(),
 		notes: text('notes'),
 		addedAt: timestamp('added_at', { withTimezone: true }).defaultNow().notNull()
 	},
-	(t) => [index('watch_list_position_idx').on(t.position)]
+	(t) => [
+		uniqueIndex('watch_list_user_movie_unique').on(t.userId, t.movieId),
+		index('watch_list_position_idx').on(t.position)
+	]
 );
 
 export const suggestions = pgTable('suggestions', {
@@ -194,6 +218,9 @@ export const awardWinners = pgTable(
 
 export const sessions = pgTable('sessions', {
 	id: text('id').primaryKey(),
+	userId: uuid('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
 	expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
 });
@@ -208,6 +235,8 @@ export const rateLimits = pgTable(
 	(t) => [primaryKey({ columns: [t.bucket, t.windowStart] })]
 );
 
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 export type Movie = typeof movies.$inferSelect;
 export type NewMovie = typeof movies.$inferInsert;
 export type Review = typeof reviews.$inferSelect;

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { profilePrefix } from '$lib/profile';
 	import { formatPublicScore, scoreTier } from '$lib/ratings';
 
 	type Props = {
@@ -11,10 +13,11 @@
 
 	const { title, year, slug, posterUrl, score }: Props = $props();
 	const tier = $derived(score == null ? null : scoreTier(score));
+	const prefix = $derived(profilePrefix(page.url.pathname));
 </script>
 
 <a
-	href="/reviews/{slug}"
+	href="{prefix}/reviews/{slug}"
 	class="group relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] transition duration-200 hover:-translate-y-2 hover:shadow-[0_30px_60px_-30px_oklch(0%_0_0_/_0.8),0_0_40px_-10px_oklch(78%_0.19_65_/_0.3)]"
 >
 	{#if posterUrl}

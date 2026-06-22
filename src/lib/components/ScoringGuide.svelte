@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { CATEGORIES } from '$lib/ratings';
 
+	type Props = { factorLabel?: string; factorName?: string };
+	const { factorLabel, factorName = 'dave' }: Props = $props();
+
 	const DESCRIPTIONS: Record<(typeof CATEGORIES)[number]['key'], string> = {
 		production:
 			'visual effects, camera work, sound, design. how good is one given frame and how well are they stitched together.',
@@ -10,8 +13,17 @@
 			'how well the emotions and deeper meanings are conveyed, plus the pacing and events that keep your interest along the way.',
 		intent:
 			'whatever the movie is actually trying to do — action, comedy, world-building, or making the audience solve a puzzle.',
-		daveFactor: 'pure bias. how much dave personally liked the movie.'
+		daveFactor: 'pure bias.'
 	};
+
+	function label(cat: (typeof CATEGORIES)[number]): string {
+		return cat.key === 'daveFactor' && factorLabel ? factorLabel : cat.label;
+	}
+	function describe(cat: (typeof CATEGORIES)[number]): string {
+		return cat.key === 'daveFactor'
+			? `pure bias. how much ${factorName} personally liked the movie.`
+			: DESCRIPTIONS[cat.key];
+	}
 
 	const SCALE: Array<{ mark: string; note: string }> = [
 		{ mark: '2.0', note: 'awful' },
@@ -45,12 +57,12 @@
 				<dt
 					class="text-mono pt-1 text-[0.7rem] tracking-[0.25em] text-[color:var(--color-accent)] uppercase"
 				>
-					{cat.label}
+					{label(cat)}
 				</dt>
 				<dd
 					class="text-display flex items-center text-base leading-relaxed italic sm:min-h-[5.5rem] sm:text-lg"
 				>
-					<span>{DESCRIPTIONS[cat.key]}</span>
+					<span>{describe(cat)}</span>
 				</dd>
 			</div>
 		{/each}

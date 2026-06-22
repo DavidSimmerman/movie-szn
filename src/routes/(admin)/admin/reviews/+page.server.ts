@@ -3,8 +3,8 @@ import { db } from '$server/db';
 import { movies, reviews } from '$db/schema';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	if (!db) return { reviews: [] };
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!db || !locals.user) return { reviews: [] };
 	const rows = await db
 		.select({
 			id: reviews.id,
@@ -16,6 +16,7 @@ export const load: PageServerLoad = async () => {
 		})
 		.from(reviews)
 		.innerJoin(movies, eq(movies.id, reviews.movieId))
+		.where(eq(reviews.userId, locals.user.id))
 		.orderBy(desc(reviews.createdAt));
 	return { reviews: rows };
 };

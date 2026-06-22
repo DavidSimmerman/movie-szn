@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import { profilePrefix } from '$lib/profile';
 	import { formatPublicScore, toNumber } from '$lib/ratings';
 
 	type Rank = 'first' | 'second' | 'third' | 'honorable';
@@ -28,6 +30,7 @@
 	};
 
 	let { data } = $props();
+	const prefix = $derived(profilePrefix(page.url.pathname));
 
 	function findWinner(cat: Category, rank: Rank): Winner | null {
 		return cat.winners.find((w) => w.rank === rank) ?? null;
@@ -64,7 +67,7 @@
 	{/if}
 
 	<SiteHeader
-		pill={data.admin
+		pill={data.canEdit
 			? { href: `/admin/seasons/${data.season.slug}/awards`, label: 'edit awards' }
 			: null}
 	/>
@@ -86,7 +89,8 @@
 
 		{#if data.categories.length === 0}
 			<p class="text-center text-[color:var(--color-muted)]">
-				no awards handed out yet — check back when dave has seen a few more films.
+				no awards handed out yet — check back when {(data.viewUser?.name ?? 'dave').toLowerCase()} has
+				seen a few more films.
 			</p>
 		{/if}
 
@@ -113,7 +117,7 @@
 						<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
 							{#each hm as w (w.id)}
 								<a
-									href="/reviews/{w.movieSlug}"
+									href="{prefix}/reviews/{w.movieSlug}"
 									class="award-card group relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)]"
 								>
 									{#if w.posterUrl}
@@ -150,7 +154,7 @@
 								<article class="podium-slot podium-first">
 									<span class="medal medal-gold">WINNER</span>
 									<a
-										href="/reviews/{first.movieSlug}"
+										href="{prefix}/reviews/{first.movieSlug}"
 										class="podium-first-card award-card group relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border-2 border-[color:var(--color-gold)]/70 bg-[color:var(--color-surface)]"
 									>
 										{#if first.posterUrl}
@@ -192,7 +196,7 @@
 									second.combinedScore != null ? toNumber(second.combinedScore) : null}
 								<article class="podium-slot podium-second">
 									<a
-										href="/reviews/{second.movieSlug}"
+										href="{prefix}/reviews/{second.movieSlug}"
 										class="award-card group relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border-2 border-[color:var(--color-silver)]/60 bg-[color:var(--color-surface)] shadow-[0_20px_40px_-20px_oklch(0%_0_0_/_0.7)]"
 									>
 										{#if second.posterUrl}
@@ -234,7 +238,7 @@
 								{@const score = third.combinedScore != null ? toNumber(third.combinedScore) : null}
 								<article class="podium-slot podium-third">
 									<a
-										href="/reviews/{third.movieSlug}"
+										href="{prefix}/reviews/{third.movieSlug}"
 										class="award-card group relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border-2 border-[color:var(--color-bronze)]/55 bg-[color:var(--color-surface)] shadow-[0_20px_40px_-20px_oklch(0%_0_0_/_0.7)]"
 									>
 										{#if third.posterUrl}
@@ -284,7 +288,7 @@
 									{#each hm as w (w.id)}
 										<li class="hm-item">
 											<a
-												href="/reviews/{w.movieSlug}"
+												href="{prefix}/reviews/{w.movieSlug}"
 												class="group flex w-36 flex-col gap-2 sm:w-40"
 											>
 												<div

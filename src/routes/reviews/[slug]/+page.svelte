@@ -4,11 +4,17 @@
 	import RatingFilmstrip from '$lib/components/RatingFilmstrip.svelte';
 	import ScoringGuideDialog from '$lib/components/ScoringGuideDialog.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import UserPicker from '$lib/components/UserPicker.svelte';
+	import { profilePrefix } from '$lib/profile';
 	import { toBreakdown, toNumber } from '$lib/ratings';
+	import { page } from '$app/state';
 
 	let { data } = $props();
 	const ratings = $derived(toBreakdown(data.review));
 	const score = $derived(toNumber(data.review.combinedScore));
+	const authorName = $derived(data.author.name.toLowerCase());
+	const factorLabel = $derived(`${authorName} factor`);
+	const prefix = $derived(profilePrefix(page.url.pathname));
 
 	function rankLabel(rank: 'first' | 'second' | 'third' | 'honorable', multi: boolean) {
 		if (multi) return 'PICK';
@@ -28,7 +34,10 @@
 
 <svelte:head>
 	<title>{data.movie.title} · movie-szn</title>
-	<meta name="description" content="Dave's review of {data.movie.title} ({data.movie.year})" />
+	<meta
+		name="description"
+		content="{data.author.name}'s review of {data.movie.title} ({data.movie.year})"
+	/>
 </svelte:head>
 
 <main class="relative min-h-dvh">
@@ -60,7 +69,7 @@
 				<p
 					class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
 				>
-					◦ dave's review ◦
+					◦ {authorName}'s review ◦
 				</p>
 				<h1 class="text-display mt-2 text-5xl leading-[0.95] italic sm:text-6xl lg:text-7xl">
 					{data.movie.title}
@@ -69,6 +78,10 @@
 					{data.movie.year} · {data.movie.type}{#if data.movie.runtimeMinutes}
 						· {data.movie.runtimeMinutes}m{/if}
 				</p>
+
+				<div class="mt-5">
+					<UserPicker users={data.reviewers} label="review by" />
+				</div>
 
 				<div class="mt-7 lg:mt-8">
 					<HeroScore {score} />
@@ -89,12 +102,12 @@
 				>
 					◦ the breakdown ◦
 				</p>
-				<ScoringGuideDialog />
+				<ScoringGuideDialog {factorLabel} factorName={authorName} />
 			</div>
 			<div
 				class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-5 sm:p-6 lg:p-8"
 			>
-				<RatingFilmstrip {ratings} />
+				<RatingFilmstrip {ratings} {factorLabel} />
 			</div>
 		</section>
 
@@ -126,7 +139,7 @@
 								{/if}
 							</div>
 							<a
-								href="/seasons/{a.seasonSlug}/awards"
+								href="{prefix}/seasons/{a.seasonSlug}/awards"
 								class="text-mono justify-self-end text-[0.65rem] tracking-wider whitespace-nowrap text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-accent)]"
 							>
 								{a.seasonName} →

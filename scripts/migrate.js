@@ -18,6 +18,18 @@ const db = drizzle(client);
 try {
 	console.log('[migrate] running migrations from ./drizzle');
 	await migrate(db, { migrationsFolder: './drizzle' });
+
+	// Owner account: the migration seeds a placeholder "dave"; set the real
+	// password hash (and display name) from env here so it stays out of git.
+	const adminHash = process.env.ADMIN_PASSWORD_HASH;
+	if (adminHash) {
+		const name = process.env.ADMIN_NAME || 'Dave';
+		await client`UPDATE users SET password_hash = ${adminHash}, name = ${name} WHERE is_admin = true`;
+		console.log('[migrate] owner account synced');
+	} else {
+		console.warn('[migrate] ADMIN_PASSWORD_HASH not set — owner login disabled');
+	}
+
 	console.log('[migrate] done');
 } catch (err) {
 	console.error('[migrate] failed', err);

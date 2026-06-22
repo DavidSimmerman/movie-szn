@@ -25,7 +25,7 @@
 	const resolvedPill = $derived<Pill | null>(
 		'pill' in props
 			? (props.pill ?? null)
-			: page.data.admin
+			: page.data.user
 				? { href: '/admin', label: 'admin' }
 				: null
 	);

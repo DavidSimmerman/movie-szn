@@ -9,17 +9,18 @@
 	const movie = $derived(page.data.movie);
 	const review = $derived(page.data.review);
 	const isReview = $derived(Boolean(movie?.slug && review?.combinedScore != null));
+	const authorName = $derived(page.data.author?.name?.toLowerCase() ?? 'dave');
 
 	const ogUrl = $derived(`${data.origin}${page.url.pathname}`);
-	const ogTitle = $derived(isReview ? `${movie.title} — dave's review` : 'movie-szn');
+	const ogTitle = $derived(isReview ? `${movie.title} — ${authorName}'s review` : 'movie-szn');
 	const ogDescription = $derived(
 		isReview
-			? `${formatPublicScore(toNumber(review.combinedScore))}/10 · dave's review of ${movie.title} (${movie.year})`
+			? `${formatPublicScore(toNumber(review.combinedScore))}/10 · ${authorName}'s review of ${movie.title} (${movie.year})`
 			: description
 	);
 	const ogImage = $derived(
 		isReview
-			? `${data.origin}/reviews/${movie.slug}/og.png?v=${new Date(review.updatedAt).getTime()}`
+			? `${data.origin}${page.url.pathname}/og.png?v=${new Date(review.updatedAt).getTime()}`
 			: `${data.origin}/og.png`
 	);
 </script>
