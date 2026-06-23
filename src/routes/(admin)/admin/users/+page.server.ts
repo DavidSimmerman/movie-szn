@@ -2,7 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import { asc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$server/db';
-import { users } from '$db/schema';
+import { userAvatars, users } from '$db/schema';
 import { hashPassword } from '$server/auth';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -17,12 +17,43 @@ const createSchema = z.object({
 	password: z.string().min(8, 'at least 8 characters').max(200)
 });
 
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
 /** Empty → null (clear); valid http(s) URL → the URL; anything else → false (reject). */
 function parseAvatar(value: FormDataEntryValue | null): string | null | false {
 	const s = (value ?? '').toString().trim();
 	if (!s) return null;
 	return /^https?:\/\/.+/i.test(s) && s.length <= 2048 ? s : false;
 }
+
+type AvatarInput = { error: string } | { url: string | null } | { data: Buffer; type: string };
+
+/** An uploaded file wins; otherwise fall back to the avatar URL field. */
+async function readAvatar(body: FormData): Promise<AvatarInput> {
+	const file = body.get('avatarFile');
+	if (file instanceof File && file.size > 0) {
+		if (!ALLOWED_TYPES.has(file.type)) return { error: 'image must be JPEG, PNG, WebP, or GIF' };
+		if (file.size > MAX_AVATAR_BYTES) return { error: 'image must be under 2 MB' };
+		return { data: Buffer.from(await file.arrayBuffer()), type: file.type };
+	}
+	const url = parseAvatar(body.get('avatarUrl'));
+	if (url === false) return { error: 'avatar must be an http(s) URL' };
+	return { url };
+}
+
+async function storeAvatar(userId: string, data: Buffer, type: string) {
+	await db!
+		.insert(userAvatars)
+		.values({ userId, data, contentType: type })
+		.onConflictDoUpdate({
+			target: userAvatars.userId,
+			set: { data, contentType: type, updatedAt: new Date() }
+		});
+}
+
+/** Cache-busting URL for an uploaded avatar (the /avatar/<username> endpoint). */
+const uploadedUrl = (username: string) => `/avatar/${username}?v=${Date.now()}`;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user?.isAdmin) throw error(403, 'admins only');
@@ -54,20 +85,33 @@ export const actions: Actions = {
 		if (!parsed.success) {
 			return fail(400, { error: parsed.error.issues[0]?.message ?? 'invalid input' });
 		}
-		const avatarUrl = parseAvatar(body.get('avatarUrl'));
-		if (avatarUrl === false) return fail(400, { error: 'avatar must be an http(s) URL' });
+		const avatar = await readAvatar(body);
+		if ('error' in avatar) return fail(400, { error: avatar.error });
 
 		const passwordHash = await hashPassword(parsed.data.password);
+		let userId: string;
 		try {
-			await db.insert(users).values({
-				name: parsed.data.name,
-				username: parsed.data.username,
-				avatarUrl,
-				passwordHash,
-				isAdmin: false
-			});
+			const [row] = await db
+				.insert(users)
+				.values({
+					name: parsed.data.name,
+					username: parsed.data.username,
+					avatarUrl: 'url' in avatar ? avatar.url : null,
+					passwordHash,
+					isAdmin: false
+				})
+				.returning({ id: users.id });
+			userId = row.id;
 		} catch {
 			return fail(409, { error: 'that username is already taken' });
+		}
+
+		if ('data' in avatar) {
+			await storeAvatar(userId, avatar.data, avatar.type);
+			await db
+				.update(users)
+				.set({ avatarUrl: uploadedUrl(parsed.data.username) })
+				.where(eq(users.id, userId));
 		}
 		return { ok: true };
 	},
@@ -78,9 +122,25 @@ export const actions: Actions = {
 		const body = await request.formData();
 		const id = body.get('id');
 		if (typeof id !== 'string') return fail(400);
-		const avatarUrl = parseAvatar(body.get('avatarUrl'));
-		if (avatarUrl === false) return fail(400, { error: 'avatar must be an http(s) URL' });
-		await db.update(users).set({ avatarUrl }).where(eq(users.id, id));
+		const target = await db.query.users.findFirst({
+			where: eq(users.id, id),
+			columns: { username: true }
+		});
+		if (!target) return fail(404, { error: 'no such user' });
+
+		const avatar = await readAvatar(body);
+		if ('error' in avatar) return fail(400, { error: avatar.error });
+
+		if ('data' in avatar) {
+			await storeAvatar(id, avatar.data, avatar.type);
+			await db
+				.update(users)
+				.set({ avatarUrl: uploadedUrl(target.username) })
+				.where(eq(users.id, id));
+		} else if (avatar.url) {
+			// only set when a URL was actually given — an empty submit leaves it as-is
+			await db.update(users).set({ avatarUrl: avatar.url }).where(eq(users.id, id));
+		}
 		return { ok: true };
 	},
 

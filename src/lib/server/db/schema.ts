@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
 	boolean,
 	check,
+	customType,
 	date,
 	index,
 	integer,
@@ -15,6 +16,12 @@ import {
 	uniqueIndex,
 	uuid
 } from 'drizzle-orm/pg-core';
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+	dataType() {
+		return 'bytea';
+	}
+});
 
 export const mediaType = pgEnum('media_type', ['movie', 'show']);
 export const suggestionStatus = pgEnum('suggestion_status', [
@@ -33,6 +40,17 @@ export const users = pgTable('users', {
 	passwordHash: text('password_hash').notNull(),
 	isAdmin: boolean('is_admin').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+// Uploaded avatar blobs live here (not on `users`) so user lookups never pull the
+// bytes. `users.avatar_url` points at /avatar/<username> when one is stored.
+export const userAvatars = pgTable('user_avatars', {
+	userId: uuid('user_id')
+		.primaryKey()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	data: bytea('data').notNull(),
+	contentType: text('content_type').notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 });
 
 export const movies = pgTable(
