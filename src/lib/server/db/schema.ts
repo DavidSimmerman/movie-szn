@@ -37,6 +37,8 @@ export const users = pgTable('users', {
 	username: text('username').notNull().unique(),
 	name: text('name').notNull(),
 	avatarUrl: text('avatar_url'),
+	bio: text('bio'),
+	traits: jsonb('traits').$type<{ label: string; stars: number }[]>().notNull().default([]),
 	passwordHash: text('password_hash').notNull(),
 	isAdmin: boolean('is_admin').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()

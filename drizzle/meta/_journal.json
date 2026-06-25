@@ -64,6 +64,13 @@
       "when": 1782179537719,
       "tag": "0008_multi_user",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782362633932,
+      "tag": "0009_colossal_arclight",
+      "breakpoints": true
     }
   ]
 }

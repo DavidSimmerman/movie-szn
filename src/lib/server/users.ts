@@ -3,6 +3,8 @@ import { db } from './db';
 import { users, type User } from './db/schema';
 
 export type PublicUser = Pick<User, 'id' | 'username' | 'name' | 'isAdmin' | 'avatarUrl'>;
+export type Trait = { label: string; stars: number };
+export type Reviewer = PublicUser & { bio: string | null; traits: Trait[] };
 
 const cols = {
 	id: users.id,
@@ -16,6 +18,15 @@ const cols = {
 export async function listUsers(): Promise<PublicUser[]> {
 	if (!db) return [];
 	return db.select(cols).from(users).orderBy(asc(users.createdAt));
+}
+
+/** Reviewers with their profile blurb and personality traits, oldest first. */
+export async function listReviewers(): Promise<Reviewer[]> {
+	if (!db) return [];
+	return db
+		.select({ ...cols, bio: users.bio, traits: users.traits })
+		.from(users)
+		.orderBy(asc(users.createdAt));
 }
 
 export async function getUserByUsername(username: string): Promise<PublicUser | null> {
