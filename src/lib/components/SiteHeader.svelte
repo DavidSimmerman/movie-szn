@@ -14,6 +14,7 @@
 
 	const DEFAULT_LINKS: NavLink[] = [
 		{ href: '/reviews', label: 'reviews' },
+		{ href: '/reviewers', label: 'reviewers' },
 		{ href: '/watchlist', label: 'watchlist' },
 		{ href: '/suggest', label: 'suggest' },
 		{ href: '/seasons', label: 'seasons' }

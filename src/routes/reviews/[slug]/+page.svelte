@@ -66,24 +66,20 @@
 			{/if}
 
 			<div>
-				<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-					<div>
-						<p
-							class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
-						>
-							◦ {authorName}'s review ◦
-						</p>
-						<h1 class="text-display mt-2 text-5xl leading-[0.95] italic sm:text-6xl lg:text-7xl">
-							{data.movie.title}
-						</h1>
-						<p class="text-mono mt-3 text-sm text-[color:var(--color-muted)]">
-							{data.movie.year} · {data.movie.type}{#if data.movie.runtimeMinutes}
-								· {data.movie.runtimeMinutes}m{/if}
-						</p>
-					</div>
-					<div class="self-end sm:self-auto">
-						<UserPicker users={data.reviewers} label="reviewer" />
-					</div>
+				<p
+					class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
+				>
+					◦ {authorName}'s review ◦
+				</p>
+				<h1 class="text-display mt-2 text-5xl leading-[0.95] italic sm:text-6xl lg:text-7xl">
+					{data.movie.title}
+				</h1>
+				<div class="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+					<p class="text-mono text-sm text-[color:var(--color-muted)]">
+						{data.movie.year} · {data.movie.type}{#if data.movie.runtimeMinutes}
+							· {data.movie.runtimeMinutes}m{/if}
+					</p>
+					<UserPicker users={data.reviewers} label="reviewer" variant="inline" />
 				</div>
 
 				<div class="mt-7 lg:mt-8">

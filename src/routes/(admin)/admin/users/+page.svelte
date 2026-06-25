@@ -169,6 +169,72 @@
 								save
 							</button>
 						</form>
+						<details class="mt-2">
+							<summary
+								class="text-mono cursor-pointer text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
+							>
+								edit profile
+							</summary>
+							<form
+								method="POST"
+								action="?/updateProfile"
+								use:enhance
+								class="mt-3 flex flex-col gap-3"
+							>
+								<input type="hidden" name="userId" value={u.id} />
+								<label class="block">
+									<span
+										class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
+									>
+										blurb
+									</span>
+									<textarea
+										name="bio"
+										rows="3"
+										maxlength="280"
+										placeholder="a sentence or two about this reviewer"
+										class="{inputClass} mt-2 resize-y">{u.bio ?? ''}</textarea
+									>
+								</label>
+								<div class="flex flex-col gap-2">
+									<span
+										class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase"
+									>
+										traits
+									</span>
+									{#each [0, 1, 2] as i (i)}
+										<div class="flex gap-2">
+											<input
+												name="traitLabel"
+												type="text"
+												maxlength="40"
+												placeholder="e.g. Overly Critical"
+												value={u.traits[i]?.label ?? ''}
+												aria-label="trait {i + 1} label"
+												class="text-mono min-w-0 flex-1 rounded border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1 text-xs outline-none focus:border-[color:var(--color-accent)]"
+											/>
+											<input
+												name="traitStars"
+												type="number"
+												min="0"
+												max="5"
+												step="0.5"
+												placeholder="0–5"
+												value={u.traits[i]?.stars ?? ''}
+												aria-label="trait {i + 1} stars"
+												class="text-mono w-20 shrink-0 rounded border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1 text-xs outline-none focus:border-[color:var(--color-accent)]"
+											/>
+										</div>
+									{/each}
+								</div>
+								<button
+									type="submit"
+									class="text-mono self-start rounded border border-[color:var(--color-border)] px-3 py-1.5 text-[0.65rem] tracking-[0.15em] text-[color:var(--color-muted)] uppercase transition hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"
+								>
+									save profile
+								</button>
+							</form>
+						</details>
 					</div>
 					{#if !u.isAdmin}
 						<form

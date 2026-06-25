@@ -17,6 +17,31 @@ const createSchema = z.object({
 	password: z.string().min(8, 'at least 8 characters').max(200)
 });
 
+const profileSchema = z.object({
+	userId: z.string().uuid(),
+	bio: z.string().trim().max(280).optional()
+});
+
+/** Round to the nearest 0.5 and clamp into [0, 5]; NaN → 0. */
+function parseStars(value: FormDataEntryValue | undefined): number {
+	const n = Number((value ?? '').toString());
+	if (Number.isNaN(n)) return 0;
+	return Math.min(5, Math.max(0, Math.round(n * 2) / 2));
+}
+
+/** Zip the repeated traitLabel/traitStars fields into validated traits, dropping blank labels. */
+function parseTraits(body: FormData): { label: string; stars: number }[] {
+	const labels = body.getAll('traitLabel');
+	const stars = body.getAll('traitStars');
+	const traits: { label: string; stars: number }[] = [];
+	for (let i = 0; i < labels.length; i++) {
+		const label = (labels[i] ?? '').toString().trim().slice(0, 40);
+		if (!label) continue;
+		traits.push({ label, stars: parseStars(stars[i]) });
+	}
+	return traits.slice(0, 3);
+}
+
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -65,6 +90,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			name: users.name,
 			avatarUrl: users.avatarUrl,
 			isAdmin: users.isAdmin,
+			bio: users.bio,
+			traits: users.traits,
 			createdAt: users.createdAt
 		})
 		.from(users)
@@ -113,6 +140,25 @@ export const actions: Actions = {
 				.set({ avatarUrl: uploadedUrl(parsed.data.username) })
 				.where(eq(users.id, userId));
 		}
+		return { ok: true };
+	},
+
+	updateProfile: async ({ request, locals }) => {
+		if (!locals.user?.isAdmin) return fail(403, { error: 'admins only' });
+		if (!db) return fail(503, { error: 'database not configured' });
+		const body = await request.formData();
+		const parsed = profileSchema.safeParse({
+			userId: body.get('userId'),
+			bio: body.get('bio') ?? undefined
+		});
+		if (!parsed.success) {
+			return fail(400, { error: parsed.error.issues[0]?.message ?? 'invalid input' });
+		}
+		const traits = parseTraits(body);
+		await db
+			.update(users)
+			.set({ bio: parsed.data.bio || null, traits })
+			.where(eq(users.id, parsed.data.userId));
 		return { ok: true };
 	},
 
