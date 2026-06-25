@@ -66,7 +66,7 @@
 			{/if}
 
 			<div>
-				<div class="flex items-start justify-between gap-4">
+				<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 					<div>
 						<p
 							class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
@@ -81,7 +81,9 @@
 								· {data.movie.runtimeMinutes}m{/if}
 						</p>
 					</div>
-					<UserPicker users={data.reviewers} label="reviewer" />
+					<div class="self-end sm:self-auto">
+						<UserPicker users={data.reviewers} label="reviewer" />
+					</div>
 				</div>
 
 				<div class="mt-7 lg:mt-8">
