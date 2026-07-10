@@ -227,7 +227,9 @@
 										{#if s.status === 'watching'}<span class="text-[color:var(--color-accent)]"
 												>dave is watching this</span
 											>{/if}
-										{#if s.status === 'watching' && s.imdbUrl} · {/if}
+										{#if s.status === 'watching' && s.imdbUrl}
+											·
+										{/if}
 										{#if s.imdbUrl}
 											<a
 												href={s.imdbUrl}

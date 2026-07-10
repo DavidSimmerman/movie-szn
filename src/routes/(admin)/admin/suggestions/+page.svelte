@@ -19,7 +19,6 @@
 		added: data.suggestions.filter((s) => s.status === 'added').length,
 		declined: data.suggestions.filter((s) => s.status === 'declined').length
 	});
-
 </script>
 
 <svelte:head><title>suggestions · admin</title></svelte:head>
