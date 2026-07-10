@@ -177,7 +177,7 @@
 		<select
 			name="movieId"
 			bind:value={newMovieId}
-			class="text-mono rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
+			class="text-mono max-w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-3 py-2 outline-none focus:border-[color:var(--color-accent)]"
 		>
 			<option value="">— pick a movie —</option>
 			{#each data.candidates as m (m.id)}
@@ -215,7 +215,7 @@
 				ondragleave={() => handleDragLeave(item.id)}
 				ondrop={(e) => handleDrop(e, item.id)}
 				ondragend={handleDragEnd}
-				class="dnd-row flex items-center gap-4 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4"
+				class="dnd-row flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-4"
 				class:is-dragging={draggingId === item.id}
 				class:is-target={dropTargetId === item.id && draggingId !== item.id}
 			>
@@ -232,7 +232,7 @@
 				{#if item.posterUrl}
 					<img src={item.posterUrl} alt="" class="h-16 w-11 rounded object-cover" />
 				{/if}
-				<div class="flex-1">
+				<div class="min-w-[10rem] flex-1">
 					<p class="text-display text-lg">{item.title}</p>
 					<p class="text-mono text-xs text-[color:var(--color-muted)]">
 						{item.year}{#if item.notes}

@@ -62,8 +62,8 @@
 {:else}
 	<ul class="divide-y divide-[color:var(--color-border)]">
 		{#each data.seasons as s (s.id)}
-			<li class="flex items-center gap-4 py-4">
-				<div class="flex-1">
+			<li class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
+				<div class="min-w-[12rem] flex-1">
 					<p class="text-display text-xl">{s.name}</p>
 					<p class="text-mono text-xs text-[color:var(--color-muted)]">
 						{s.startsAt} → {s.endsAt} · /seasons/{s.slug}
