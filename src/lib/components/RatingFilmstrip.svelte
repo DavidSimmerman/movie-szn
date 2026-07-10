@@ -25,11 +25,11 @@
 </script>
 
 <div
+	class={compact ? '' : 'gap-x-6 lg:gap-x-4'}
 	class:grid={!compact}
 	class:grid-cols-2={!compact}
 	class:lg:grid-cols-5={!compact}
 	class:gap-y-8={!compact}
-	class:gap-x-4={!compact}
 	class:flex={compact}
 	class:flex-wrap={compact}
 	class:justify-between={compact}

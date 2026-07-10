@@ -17,8 +17,6 @@
 	let track: HTMLDivElement | undefined = $state();
 	let current = $state(0);
 	let maxStart = $state(0);
-	let paused = $state(false);
-	let reducedMotion = $state(false);
 
 	function cardStride(): number {
 		if (!track) return 0;
@@ -68,32 +66,16 @@
 	}
 
 	onMount(() => {
-		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		recompute();
 		const ro = new ResizeObserver(recompute);
 		if (track) ro.observe(track);
-		const id = reducedMotion
-			? null
-			: setInterval(() => {
-					if (!paused && document.visibilityState === 'visible') next();
-				}, 5000);
 		return () => {
 			ro.disconnect();
-			if (id) clearInterval(id);
 		};
 	});
 </script>
 
-<div
-	class="relative"
-	role="region"
-	aria-roledescription="carousel"
-	aria-label="Latest reviews"
-	onmouseenter={() => (paused = true)}
-	onmouseleave={() => (paused = false)}
-	onfocusin={() => (paused = true)}
-	onfocusout={() => (paused = false)}
->
+<div class="relative" role="region" aria-roledescription="carousel" aria-label="Latest reviews">
 	<div
 		bind:this={track}
 		onscroll={onScroll}

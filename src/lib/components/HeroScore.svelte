@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Tween } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
+	import { Spring } from 'svelte/motion';
 	import { formatPublicScore, isFlex, scoreTier } from '$lib/ratings';
 
 	type Props = {
@@ -12,8 +11,9 @@
 	const flex = $derived(isFlex(score));
 	const tier = $derived(scoreTier(score));
 
-	const tween = new Tween(0, { duration: 1100, easing: cubicOut });
-	const animatedScore = $derived(tween.current);
+	// ~600ms settle, per the design system's count-up spec
+	const spring = new Spring(0, { stiffness: 0.3, damping: 0.8 });
+	const animatedScore = $derived(Math.min(spring.current, score));
 	const formatted = $derived(formatPublicScore(animatedScore));
 	const [intPart, decPart] = $derived(formatted.split('.') as [string, string | undefined]);
 	const pct = $derived(Math.min(animatedScore / 10, 1));
@@ -21,7 +21,7 @@
 	onMount(() => {
 		if (typeof window === 'undefined') return;
 		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		tween.set(score, { duration: reduce ? 0 : 1100 });
+		spring.set(score, { instant: reduce });
 	});
 </script>
 
@@ -41,8 +41,8 @@
 	>
 		<div
 			class="h-full rounded-full transition-[width] duration-500"
-			class:bg-[color:var(--color-accent)]={tier !== 'flex' && tier !== 'peak'}
-			class:bg-[color:var(--color-gold)]={tier === 'peak' || tier === 'flex'}
+			class:bg-[color:var(--color-accent)]={tier !== 'flex'}
+			class:bg-[color:var(--color-gold)]={tier === 'flex'}
 			style="width: {pct * 100}%"
 		></div>
 	</div>

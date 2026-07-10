@@ -18,7 +18,7 @@
 
 <a
 	href="{prefix}/reviews/{slug}"
-	class="group relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] transition duration-200 hover:-translate-y-2 hover:shadow-[0_30px_60px_-30px_oklch(0%_0_0_/_0.8),0_0_40px_-10px_oklch(78%_0.19_65_/_0.3)]"
+	class="group hover:shadow-bulb relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] transition duration-200 hover:-translate-y-2"
 >
 	{#if posterUrl}
 		<img
@@ -45,8 +45,8 @@
 			class="absolute top-3 right-3 rounded-full border bg-[color:var(--color-bg)]/85 px-3 py-1 shadow-[0_4px_20px_-4px_oklch(0%_0_0_/_0.6)] backdrop-blur-md"
 			class:border-[color:var(--color-gold)]={tier === 'flex'}
 			class:border-[color:var(--color-border)]={tier !== 'flex'}
-			class:text-[color:var(--color-gold)]={tier === 'peak' || tier === 'flex'}
-			class:text-[color:var(--color-accent)]={tier === 'high'}
+			class:text-[color:var(--color-gold)]={tier === 'flex'}
+			class:text-[color:var(--color-accent)]={tier === 'peak' || tier === 'high'}
 			class:text-[color:var(--color-text)]={tier === 'mid'}
 			class:text-[color:var(--color-danger)]={tier === 'low'}
 			class:flex-glow-ring={tier === 'flex'}

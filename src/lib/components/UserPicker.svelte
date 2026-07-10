@@ -60,7 +60,7 @@
 								? 'bg-[color:var(--color-accent)]/10 text-[color:var(--color-accent)]'
 								: 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]'}"
 						>
-							{@render avatar(u, 'h-16 w-16')}
+							{@render avatar(u, 'h-8 w-8')}
 							<span class="flex-1">{u.name}</span>
 							{#if active}<span aria-hidden="true">✓</span>{/if}
 						</a>
@@ -114,7 +114,7 @@
 									? 'bg-[color:var(--color-accent)]/10 text-[color:var(--color-accent)]'
 									: 'text-[color:var(--color-muted)] hover:bg-[color:var(--color-surface-2)] hover:text-[color:var(--color-text)]'}"
 							>
-								{@render avatar(u, 'h-16 w-16')}
+								{@render avatar(u, 'h-8 w-8')}
 								<span class="flex-1">{u.name}</span>
 								{#if active}<span aria-hidden="true">✓</span>{/if}
 							</a>

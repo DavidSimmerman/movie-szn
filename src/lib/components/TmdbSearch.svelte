@@ -22,7 +22,7 @@
 
 	let {
 		onSelect,
-		placeholder = 'search tmdb (dune, severance, the bear...)',
+		placeholder = 'search tmdb…',
 		selectedKey = null,
 		pendingKey = null,
 		autofocus = false,

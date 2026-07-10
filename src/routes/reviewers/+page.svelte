@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>Reviewers · movie-szn</title>
+	<title>reviewers · movie-szn</title>
 </svelte:head>
 
 <main class="relative min-h-dvh overflow-hidden">
@@ -23,18 +23,18 @@
 			<p
 				class="text-mono text-[0.65rem] tracking-[0.4em] text-[color:var(--color-accent)] uppercase"
 			>
-				◦ the reviewers ◦
+				◦ the masthead ◦
 			</p>
 			<h1 class="text-display mt-2 text-6xl italic">the critics</h1>
 		</div>
 
 		{#if data.reviewers.length === 0}
-			<p class="mt-12 text-[color:var(--color-muted)]">No reviewers yet.</p>
+			<p class="mt-12 text-[color:var(--color-muted)]">no reviewers yet.</p>
 		{:else}
-			<div class="mt-12 grid gap-6 sm:grid-cols-2">
+			<div class="mt-12 flex flex-wrap justify-center gap-6">
 				{#each data.reviewers as r (r.id)}
 					<div
-						class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
+						class="w-full max-w-md rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
 					>
 						<a
 							href={profileHref('/reviews', r.username, owner?.username ?? r.username)}

@@ -51,11 +51,10 @@
 			<section class="awards-preview" aria-labelledby="awards-preview-heading">
 				<header class="awards-preview__head">
 					<p class="awards-preview__kicker">◦ now showing ◦</p>
-					<h2 id="awards-preview-heading" class="awards-preview__title">Season Awards</h2>
+					<h2 id="awards-preview-heading" class="awards-preview__title">season awards</h2>
 					<p class="awards-preview__sub">
 						{preview.totalCategories}
-						{preview.totalCategories === 1 ? 'category' : 'categories'}
-						of superlatives, ranked & ribboned
+						{preview.totalCategories === 1 ? 'category' : 'categories'}, podium and all
 					</p>
 				</header>
 
@@ -89,7 +88,7 @@
 				</ul>
 
 				<a href="{prefix}/seasons/{data.season.slug}/awards" class="awards-preview__cta">
-					<span>See all awards</span>
+					<span>see all awards</span>
 					<span aria-hidden="true" class="awards-preview__arrow">→</span>
 				</a>
 			</section>
@@ -135,12 +134,12 @@
 		margin: 3rem auto 0;
 		max-width: 64rem;
 		padding: 2rem 2rem 1.75rem;
-		border: 1px solid color-mix(in oklch, var(--color-gold) 30%, transparent);
-		border-radius: 20px;
+		border: 1px solid color-mix(in oklch, var(--color-accent) 30%, transparent);
+		border-radius: var(--radius-card);
 		background:
 			radial-gradient(
 				ellipse 70% 90% at 50% 0%,
-				color-mix(in oklch, var(--color-gold) 10%, transparent),
+				color-mix(in oklch, var(--color-accent) 10%, transparent),
 				transparent 70%
 			),
 			linear-gradient(
@@ -149,8 +148,8 @@
 				color-mix(in oklch, var(--color-bg) 94%, transparent)
 			);
 		box-shadow:
-			inset 0 1px 0 color-mix(in oklch, var(--color-gold) 25%, transparent),
-			0 30px 60px -40px color-mix(in oklch, var(--color-gold) 55%, transparent),
+			inset 0 1px 0 color-mix(in oklch, var(--color-accent) 25%, transparent),
+			0 30px 60px -40px color-mix(in oklch, var(--color-accent) 55%, transparent),
 			0 0 80px -40px color-mix(in oklch, var(--color-accent) 40%, transparent);
 		text-align: center;
 		isolation: isolate;
@@ -194,7 +193,6 @@
 	}
 
 	.awards-preview__grid {
-		grid-template-columns: repeat(5, 1fr);
 		gap: 1rem;
 		margin: 0 0 1.75rem;
 		padding: 1.5rem 0 0;
@@ -211,12 +209,14 @@
 			display: none;
 		}
 		.awards-preview__desktop {
-			display: grid;
+			display: flex;
 		}
 	}
 
 	.awards-preview__pick {
 		display: flex;
+		flex: 1 1 0;
+		min-width: 0;
 		flex-direction: column;
 		gap: 0.6rem;
 	}
@@ -251,17 +251,17 @@
 
 	.awards-preview__card:hover {
 		transform: translateY(-3px);
-		border-color: color-mix(in oklch, var(--color-gold) 55%, transparent);
+		border-color: color-mix(in oklch, var(--color-accent) 55%, transparent);
 		box-shadow:
 			0 24px 48px -24px oklch(0% 0 0 / 0.8),
-			0 0 40px -10px color-mix(in oklch, var(--color-gold) 40%, transparent);
+			0 0 40px -10px color-mix(in oklch, var(--color-accent) 40%, transparent);
 	}
 
 	.awards-preview__pick--hero .awards-preview__card {
-		border-color: color-mix(in oklch, var(--color-gold) 55%, transparent);
+		border-color: color-mix(in oklch, var(--color-accent) 55%, transparent);
 		box-shadow:
 			0 30px 60px -28px oklch(0% 0 0 / 0.85),
-			0 0 50px -12px color-mix(in oklch, var(--color-gold) 45%, transparent);
+			0 0 50px -12px color-mix(in oklch, var(--color-accent) 45%, transparent);
 	}
 
 	.awards-preview__poster {
