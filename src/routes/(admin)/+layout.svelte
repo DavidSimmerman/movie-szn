@@ -52,7 +52,7 @@
 			</div>
 		</div>
 		<nav
-			class="scrollbar-none mx-auto flex max-w-[72rem] gap-6 overflow-x-auto px-6 pb-3 whitespace-nowrap"
+			class="mx-auto flex max-w-[72rem] scrollbar-none gap-6 overflow-x-auto px-6 pb-3 whitespace-nowrap"
 		>
 			{#each nav as item (item.href)}
 				{@const active =

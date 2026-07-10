@@ -101,7 +101,9 @@
 			class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
 		>
 			<div class="mb-4 flex items-baseline justify-between">
-				<h2 class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase">
+				<h2
+					class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase"
+				>
 					latest reviews
 				</h2>
 				<a
@@ -129,7 +131,9 @@
 								>
 									{r.title}
 								</a>
-								<span class="text-mono text-[0.65rem] text-[color:var(--color-muted)]">{r.year}</span>
+								<span class="text-mono text-[0.65rem] text-[color:var(--color-muted)]"
+									>{r.year}</span
+								>
 							</span>
 							<span class="text-mono shrink-0 text-sm text-[color:var(--color-accent)]">
 								{score(r.combinedScore)}
@@ -158,7 +162,9 @@
 					</a>
 				</div>
 				{#if data.pendingSuggestions.length === 0}
-					<p class="text-sm text-[color:var(--color-muted)]">no pending suggestions. quiet out there.</p>
+					<p class="text-sm text-[color:var(--color-muted)]">
+						no pending suggestions. quiet out there.
+					</p>
 				{:else}
 					<ul class="divide-y divide-[color:var(--color-border)]">
 						{#each data.pendingSuggestions as s (s.id)}
