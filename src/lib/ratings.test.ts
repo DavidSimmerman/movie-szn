@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+	CATEGORIES,
 	combinedScore,
 	formatPublicScore,
 	formatScore,
 	isFlex,
+	isRatingKey,
 	scoreTier,
 	toBreakdown,
 	toNumber
@@ -95,6 +97,22 @@ describe('toNumber', () => {
 		expect(toNumber(null)).toBe(0);
 		expect(toNumber(undefined)).toBe(0);
 		expect(toNumber('not a number')).toBe(0);
+	});
+});
+
+describe('isRatingKey', () => {
+	it('accepts exactly the CATEGORIES keys', () => {
+		for (const c of CATEGORIES) expect(isRatingKey(c.key)).toBe(true);
+	});
+
+	it('rejects everything else', () => {
+		expect(isRatingKey(null)).toBe(false);
+		expect(isRatingKey('')).toBe(false);
+		expect(isRatingKey('overall')).toBe(false);
+		expect(isRatingKey('combinedScore')).toBe(false);
+		expect(isRatingKey('story_plot')).toBe(false);
+		expect(isRatingKey('DaveFactor')).toBe(false);
+		expect(isRatingKey('production; drop table reviews')).toBe(false);
 	});
 });
 

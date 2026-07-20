@@ -2,11 +2,20 @@ import { error } from '@sveltejs/kit';
 import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import { db } from '$server/db';
 import { awardCategories, awardWinners, movies, movieSeasons, reviews, seasons } from '$db/schema';
+import { isRatingKey, type RatingSortKey } from '$lib/ratings';
 import type { PageServerLoad } from './$types';
 
 const RANK_PRIORITY: Record<string, number> = { first: 0, second: 1, third: 2, honorable: 3 };
 
-export const load: PageServerLoad = async ({ params, parent, locals }) => {
+const SORT_COLUMNS = {
+	production: reviews.production,
+	acting: reviews.acting,
+	storyPlot: reviews.storyPlot,
+	intent: reviews.intent,
+	daveFactor: reviews.daveFactor
+} as const;
+
+export const load: PageServerLoad = async ({ params, parent, locals, url }) => {
 	if (!db) throw error(503);
 	const { viewUser } = await parent();
 	if (!viewUser) throw error(404, 'season not found');
@@ -16,6 +25,13 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
 	});
 	if (!season) throw error(404, 'season not found');
 
+	const sortParam = url.searchParams.get('sort');
+	const sort: RatingSortKey | null = isRatingKey(sortParam) ? sortParam : null;
+
+	const orderBy = sort
+		? [desc(SORT_COLUMNS[sort]), desc(reviews.combinedScore), desc(movieSeasons.addedAt)]
+		: [desc(reviews.combinedScore), desc(movieSeasons.addedAt)];
+
 	const items = await db
 		.select({
 			id: movies.id,
@@ -23,13 +39,18 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
 			title: movies.title,
 			year: movies.year,
 			posterUrl: movies.posterUrl,
-			combinedScore: reviews.combinedScore
+			combinedScore: reviews.combinedScore,
+			production: reviews.production,
+			acting: reviews.acting,
+			storyPlot: reviews.storyPlot,
+			intent: reviews.intent,
+			daveFactor: reviews.daveFactor
 		})
 		.from(movieSeasons)
 		.innerJoin(movies, eq(movies.id, movieSeasons.movieId))
 		.leftJoin(reviews, and(eq(reviews.movieId, movies.id), eq(reviews.userId, season.userId)))
 		.where(eq(movieSeasons.seasonId, season.id))
-		.orderBy(desc(reviews.combinedScore), desc(movieSeasons.addedAt));
+		.orderBy(...orderBy);
 
 	const categories = await db
 		.select()
@@ -105,6 +126,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
 	return {
 		season,
 		movies: items,
+		sort,
 		awardsPreview,
 		canEdit: locals.user?.id === season.userId
 	};

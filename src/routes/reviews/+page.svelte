@@ -1,6 +1,7 @@
 <script lang="ts">
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
 	import PosterCard from '$lib/components/PosterCard.svelte';
+	import RatingSortBar from '$lib/components/RatingSortBar.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
 	import UserPicker from '$lib/components/UserPicker.svelte';
 	import { toNumber } from '$lib/ratings';
@@ -33,14 +34,20 @@
 		{#if data.reviews.length === 0}
 			<p class="mt-12 text-[color:var(--color-muted)]">no reviews yet.</p>
 		{:else}
-			<div class="mt-12 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+			<div class="mt-10">
+				<RatingSortBar
+					active={data.sort}
+					factorName={data.viewUser?.name.toLowerCase() ?? 'dave'}
+				/>
+			</div>
+			<div class="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
 				{#each data.reviews as r (r.id)}
 					<PosterCard
 						title={r.title}
 						year={r.year}
 						slug={r.slug}
 						posterUrl={r.posterUrl}
-						score={toNumber(r.combinedScore)}
+						score={data.sort ? Math.min(toNumber(r[data.sort]) * 2, 10) : toNumber(r.combinedScore)}
 					/>
 				{/each}
 			</div>

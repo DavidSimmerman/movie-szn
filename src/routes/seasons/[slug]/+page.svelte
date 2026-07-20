@@ -3,6 +3,7 @@
 	import AwardsCarousel from '$lib/components/AwardsCarousel.svelte';
 	import FilmGrain from '$lib/components/FilmGrain.svelte';
 	import PosterCard from '$lib/components/PosterCard.svelte';
+	import RatingSortBar from '$lib/components/RatingSortBar.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
 	import { profilePrefix } from '$lib/profile';
 	import { toNumber } from '$lib/ratings';
@@ -113,6 +114,12 @@
 					{data.movies.length === 1 ? 'title' : 'titles'}
 				</span>
 			</header>
+			<div class="mb-6">
+				<RatingSortBar
+					active={data.sort}
+					factorName={data.viewUser?.name.toLowerCase() ?? 'dave'}
+				/>
+			</div>
 			<div class="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
 				{#each data.movies as m (m.id)}
 					<PosterCard
@@ -120,7 +127,11 @@
 						year={m.year}
 						slug={m.slug}
 						posterUrl={m.posterUrl}
-						score={m.combinedScore != null ? toNumber(m.combinedScore) : null}
+						score={m.combinedScore == null
+							? null
+							: data.sort
+								? Math.min(toNumber(m[data.sort]) * 2, 10)
+								: toNumber(m.combinedScore)}
 					/>
 				{/each}
 			</div>

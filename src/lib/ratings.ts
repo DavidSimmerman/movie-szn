@@ -22,6 +22,14 @@ export const CATEGORIES = [
 	hint: string;
 }>;
 
+export type RatingSortKey = keyof RatingBreakdown;
+
+const SORT_KEYS: readonly string[] = CATEGORIES.map((c) => c.key);
+
+export function isRatingKey(v: string | null): v is RatingSortKey {
+	return v !== null && SORT_KEYS.includes(v);
+}
+
 export function combinedScore(r: RatingBreakdown): number {
 	return ((r.production + r.acting + r.storyPlot + r.intent + r.daveFactor) / 5) * 2;
 }
