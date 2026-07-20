@@ -30,6 +30,7 @@
 	html {
 		background: var(--color-bg);
 		color: var(--color-text);
+		accent-color: var(--color-accent);
 		font-family: var(--font-sans);
 		font-feature-settings: 'ss01', 'cv11';
 		-webkit-font-smoothing: antialiased;

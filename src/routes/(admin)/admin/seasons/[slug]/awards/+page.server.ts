@@ -71,6 +71,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 					reviewId: awardWinners.reviewId,
 					rank: awardWinners.rank,
 					note: awardWinners.note,
+					isSpoiler: awardWinners.isSpoiler,
 					sortOrder: awardWinners.sortOrder,
 					movieId: movies.id,
 					movieSlug: movies.slug,
@@ -418,12 +419,14 @@ export const actions: Actions = {
 			.object({
 				categoryId: z.uuid(),
 				reviewId: z.uuid(),
-				note: z.string().trim().max(140).optional()
+				note: z.string().trim().max(140).optional(),
+				isSpoiler: z.union([z.literal('true'), z.literal('false'), z.literal('on')]).optional()
 			})
 			.safeParse({
 				categoryId: body.get('categoryId'),
 				reviewId: body.get('reviewId'),
-				note: body.get('note') ?? ''
+				note: body.get('note') ?? '',
+				isSpoiler: body.get('isSpoiler') ?? 'false'
 			});
 		if (!parsed.success) return fail(400, { error: 'invalid input' });
 		if (!(await ownsCategory(parsed.data.categoryId, season.id))) return fail(404);
@@ -438,6 +441,7 @@ export const actions: Actions = {
 				reviewId: parsed.data.reviewId,
 				rank: 'honorable',
 				note: parsed.data.note?.trim() || null,
+				isSpoiler: parsed.data.isSpoiler === 'true' || parsed.data.isSpoiler === 'on',
 				sortOrder
 			});
 		} catch {
@@ -503,9 +507,14 @@ export const actions: Actions = {
 		const parsed = z
 			.object({
 				id: z.uuid(),
-				note: z.string().trim().max(140).optional()
+				note: z.string().trim().max(140).optional(),
+				isSpoiler: z.union([z.literal('true'), z.literal('false'), z.literal('on')]).optional()
 			})
-			.safeParse({ id: body.get('id'), note: body.get('note') ?? '' });
+			.safeParse({
+				id: body.get('id'),
+				note: body.get('note') ?? '',
+				isSpoiler: body.get('isSpoiler') ?? 'false'
+			});
 		if (!parsed.success) return fail(400);
 
 		const winner = await db.query.awardWinners.findFirst({
@@ -516,7 +525,10 @@ export const actions: Actions = {
 
 		await db
 			.update(awardWinners)
-			.set({ note: parsed.data.note?.trim() || null })
+			.set({
+				note: parsed.data.note?.trim() || null,
+				isSpoiler: parsed.data.isSpoiler === 'true' || parsed.data.isSpoiler === 'on'
+			})
 			.where(eq(awardWinners.id, parsed.data.id));
 		return { ok: true };
 	},

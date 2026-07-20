@@ -14,6 +14,7 @@
 		reviewId: string;
 		rank: Rank;
 		note: string | null;
+		isSpoiler: boolean;
 		sortOrder: number;
 		movieSlug: string;
 		title: string;
@@ -94,6 +95,7 @@
 
 	type NoteStatus = 'idle' | 'saving' | 'saved' | 'error';
 	let noteBuffer = $state<Record<string, string>>({});
+	let spoilerBuffer = $state<Record<string, boolean>>({});
 	let noteStatus = $state<Record<string, NoteStatus>>({});
 	const noteTimers = new Map<string, ReturnType<typeof setTimeout>>();
 	const NOTE_DEBOUNCE_MS = 500;
@@ -102,15 +104,28 @@
 		return noteBuffer[id] ?? initial ?? '';
 	}
 
-	function onNoteInput(id: string, value: string) {
-		noteBuffer[id] = value;
-		noteStatus[id] = 'idle';
-		const existing = noteTimers.get(id);
+	function spoilerValue(id: string, initial: boolean) {
+		return spoilerBuffer[id] ?? initial;
+	}
+
+	function onNoteInput(w: Winner, value: string) {
+		noteBuffer[w.id] = value;
+		spoilerBuffer[w.id] ??= w.isSpoiler;
+		noteStatus[w.id] = 'idle';
+		const existing = noteTimers.get(w.id);
 		if (existing) clearTimeout(existing);
 		noteTimers.set(
-			id,
-			setTimeout(() => void saveNote(id), NOTE_DEBOUNCE_MS)
+			w.id,
+			setTimeout(() => void saveNote(w.id), NOTE_DEBOUNCE_MS)
 		);
+	}
+
+	function onSpoilerToggle(w: Winner, checked: boolean) {
+		spoilerBuffer[w.id] = checked;
+		noteBuffer[w.id] ??= w.note ?? '';
+		const existing = noteTimers.get(w.id);
+		if (existing) clearTimeout(existing);
+		void saveNote(w.id);
 	}
 
 	async function saveNote(id: string) {
@@ -120,6 +135,7 @@
 			const fd = new FormData();
 			fd.set('id', id);
 			fd.set('note', note);
+			if (spoilerBuffer[id]) fd.set('isSpoiler', 'on');
 			const res = await fetch('?/updateNote', {
 				method: 'POST',
 				body: fd,
@@ -446,11 +462,21 @@
 								<div class="mt-2 flex items-center gap-2">
 									<input
 										value={noteValue(w.id, w.note)}
-										oninput={(e) => onNoteInput(w.id, e.currentTarget.value)}
+										oninput={(e) => onNoteInput(w, e.currentTarget.value)}
 										maxlength="140"
 										placeholder="note (optional)"
 										class="text-mono min-w-0 flex-1 rounded border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1 text-[0.7rem] outline-none focus:border-[color:var(--color-accent)]"
 									/>
+									<label
+										class="text-mono flex shrink-0 cursor-pointer items-center gap-1 text-[0.6rem] tracking-wider text-[color:var(--color-muted)] uppercase"
+									>
+										<input
+											type="checkbox"
+											checked={spoilerValue(w.id, w.isSpoiler)}
+											onchange={(e) => onSpoilerToggle(w, e.currentTarget.checked)}
+										/>
+										spoiler
+									</label>
 									<span
 										class="text-mono w-12 shrink-0 text-right text-[0.6rem] tracking-wider uppercase"
 										class:text-[color:var(--color-muted)]={noteStatus[w.id] === 'saving'}
@@ -538,11 +564,21 @@
 								<div class="mt-2 flex items-center gap-2">
 									<input
 										value={noteValue(h.id, h.note)}
-										oninput={(e) => onNoteInput(h.id, e.currentTarget.value)}
+										oninput={(e) => onNoteInput(h, e.currentTarget.value)}
 										maxlength="140"
 										placeholder="note (optional)"
 										class="text-mono min-w-0 flex-1 rounded border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1.5 text-xs outline-none focus:border-[color:var(--color-accent)]"
 									/>
+									<label
+										class="text-mono flex shrink-0 cursor-pointer items-center gap-1 text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
+									>
+										<input
+											type="checkbox"
+											checked={spoilerValue(h.id, h.isSpoiler)}
+											onchange={(e) => onSpoilerToggle(h, e.currentTarget.checked)}
+										/>
+										spoiler
+									</label>
 									<span
 										class="text-mono w-14 shrink-0 text-right text-[0.65rem] tracking-wider uppercase"
 										class:text-[color:var(--color-muted)]={noteStatus[h.id] === 'saving'}

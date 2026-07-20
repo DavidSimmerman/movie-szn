@@ -130,11 +130,26 @@
 									{a.categoryName}
 								</p>
 								{#if a.note}
-									<p
-										class="text-display mt-0.5 text-sm leading-tight text-[color:var(--color-muted)] italic"
-									>
-										— {a.note}
-									</p>
+									{#if a.isSpoiler}
+										<details class="spoiler-note mt-1">
+											<summary
+												class="text-mono inline-block cursor-pointer rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
+											>
+												show spoiler
+											</summary>
+											<p
+												class="text-display mt-0.5 text-sm leading-tight text-[color:var(--color-muted)] italic"
+											>
+												— {a.note}
+											</p>
+										</details>
+									{:else}
+										<p
+											class="text-display mt-0.5 text-sm leading-tight text-[color:var(--color-muted)] italic"
+										>
+											— {a.note}
+										</p>
+									{/if}
 								{/if}
 							</div>
 							<a
@@ -152,6 +167,23 @@
 </main>
 
 <style>
+	.spoiler-note > summary {
+		list-style: none;
+		border-color: color-mix(in oklab, var(--color-danger) 35%, var(--color-border));
+		background: color-mix(in oklab, var(--color-danger) 8%, transparent);
+		color: color-mix(in oklab, var(--color-danger) 45%, var(--color-muted));
+	}
+	.spoiler-note > summary::-webkit-details-marker {
+		display: none;
+	}
+	.spoiler-note > summary:hover {
+		color: var(--color-danger);
+		border-color: color-mix(in oklab, var(--color-danger) 55%, var(--color-border));
+	}
+	.spoiler-note[open] > summary {
+		opacity: 0.55;
+	}
+
 	.backdrop > img {
 		animation: backdrop-parallax linear;
 		animation-timeline: view();

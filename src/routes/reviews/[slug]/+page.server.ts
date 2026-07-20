@@ -35,6 +35,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		.select({
 			rank: awardWinners.rank,
 			note: awardWinners.note,
+			isSpoiler: awardWinners.isSpoiler,
 			categoryName: awardCategories.name,
 			categoryTagline: awardCategories.tagline,
 			allowsMultiple: awardCategories.allowsMultiple,

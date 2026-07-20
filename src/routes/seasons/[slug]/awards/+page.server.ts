@@ -32,6 +32,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
 			categoryId: awardWinners.categoryId,
 			rank: awardWinners.rank,
 			note: awardWinners.note,
+			isSpoiler: awardWinners.isSpoiler,
 			sortOrder: awardWinners.sortOrder,
 			movieSlug: movies.slug,
 			title: movies.title,

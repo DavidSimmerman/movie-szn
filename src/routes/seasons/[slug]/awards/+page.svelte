@@ -11,6 +11,7 @@
 		categoryId: string;
 		rank: Rank;
 		note: string | null;
+		isSpoiler: boolean;
 		sortOrder: number;
 		movieSlug: string;
 		title: string;
@@ -52,6 +53,30 @@
 </script>
 
 <svelte:head><title>{data.season.name} · awards · movie-szn</title></svelte:head>
+
+{#snippet winnerNote(w: Winner, noteClass: string)}
+	{#if w.note}
+		{#if w.isSpoiler}
+			<details class="spoiler-note mt-1">
+				<!-- summary sits inside the poster <a>; without preventDefault the click navigates -->
+				<summary
+					class="text-mono inline-block cursor-pointer rounded-full border px-2 py-0.5 text-[0.6rem] tracking-wider uppercase"
+					onclick={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						const d = e.currentTarget.parentElement as HTMLDetailsElement;
+						d.open = !d.open;
+					}}
+				>
+					show spoiler
+				</summary>
+				<p class={noteClass}>{w.note}</p>
+			</details>
+		{:else}
+			<p class={noteClass}>{w.note}</p>
+		{/if}
+	{/if}
+{/snippet}
 
 <main class="awards-main relative min-h-dvh">
 	{#if heroBackdrop()}
@@ -132,11 +157,10 @@
 										class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[color:var(--color-bg)] via-[color:var(--color-bg)]/70 to-transparent p-3 pt-10"
 									>
 										<p class="text-display text-sm leading-tight">{w.title}</p>
-										{#if w.note}
-											<p class="text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic">
-												{w.note}
-											</p>
-										{/if}
+										{@render winnerNote(
+											w,
+											'text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic'
+										)}
 										<p
 											class="text-mono mt-1 text-[0.65rem] tracking-wider text-[color:var(--color-muted)]"
 										>
@@ -169,11 +193,10 @@
 											class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[color:var(--color-bg)] via-[color:var(--color-bg)]/80 to-transparent p-5 pt-14"
 										>
 											<p class="text-display text-xl leading-tight">{first.title}</p>
-											{#if first.note}
-												<p class="text-display mt-1 text-sm text-[color:var(--color-text)] italic">
-													{first.note}
-												</p>
-											{/if}
+											{@render winnerNote(
+												first,
+												'text-display mt-1 text-sm text-[color:var(--color-text)] italic'
+											)}
 											<p
 												class="text-mono mt-2 text-[0.65rem] tracking-wider text-[color:var(--color-muted)]"
 											>
@@ -212,13 +235,10 @@
 											class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[color:var(--color-bg)] via-[color:var(--color-bg)]/75 to-transparent p-4 pt-12"
 										>
 											<p class="text-display text-base leading-tight">{second.title}</p>
-											{#if second.note}
-												<p
-													class="text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic"
-												>
-													{second.note}
-												</p>
-											{/if}
+											{@render winnerNote(
+												second,
+												'text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic'
+											)}
 											<p
 												class="text-mono mt-1 text-[0.65rem] tracking-wider text-[color:var(--color-muted)]"
 											>
@@ -254,13 +274,10 @@
 											class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[color:var(--color-bg)] via-[color:var(--color-bg)]/75 to-transparent p-4 pt-12"
 										>
 											<p class="text-display text-base leading-tight">{third.title}</p>
-											{#if third.note}
-												<p
-													class="text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic"
-												>
-													{third.note}
-												</p>
-											{/if}
+											{@render winnerNote(
+												third,
+												'text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic'
+											)}
 											<p
 												class="text-mono mt-1 text-[0.65rem] tracking-wider text-[color:var(--color-muted)]"
 											>
@@ -309,13 +326,10 @@
 													>
 														{w.title}
 													</p>
-													{#if w.note}
-														<p
-															class="text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic"
-														>
-															{w.note}
-														</p>
-													{/if}
+													{@render winnerNote(
+														w,
+														'text-display mt-0.5 text-xs text-[color:var(--color-muted)] italic'
+													)}
 													<p
 														class="text-mono mt-1 text-[0.65rem] tracking-wider text-[color:var(--color-muted)]"
 													>
@@ -381,6 +395,23 @@
 	}
 	.hm-item:hover {
 		transform: translateY(-2px);
+	}
+
+	.spoiler-note > summary {
+		list-style: none;
+		border-color: color-mix(in oklab, var(--color-danger) 35%, var(--color-border));
+		background: color-mix(in oklab, var(--color-danger) 8%, transparent);
+		color: color-mix(in oklab, var(--color-danger) 45%, var(--color-muted));
+	}
+	.spoiler-note > summary::-webkit-details-marker {
+		display: none;
+	}
+	.spoiler-note > summary:hover {
+		color: var(--color-danger);
+		border-color: color-mix(in oklab, var(--color-danger) 55%, var(--color-border));
+	}
+	.spoiler-note[open] > summary {
+		opacity: 0.55;
 	}
 
 	.podium-empty {

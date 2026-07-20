@@ -1,0 +1,1 @@
+ALTER TABLE "award_winners" ADD COLUMN "is_spoiler" boolean DEFAULT false NOT NULL;

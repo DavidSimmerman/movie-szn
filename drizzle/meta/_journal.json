@@ -71,6 +71,13 @@
       "when": 1782362633932,
       "tag": "0009_colossal_arclight",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784523402875,
+      "tag": "0010_bent_the_phantom",
+      "breakpoints": true
     }
   ]
 }

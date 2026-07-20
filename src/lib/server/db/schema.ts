@@ -226,6 +226,7 @@ export const awardWinners = pgTable(
 			.references(() => reviews.id, { onDelete: 'cascade' }),
 		rank: awardRank('rank').notNull(),
 		note: text('note'),
+		isSpoiler: boolean('is_spoiler').notNull().default(false),
 		sortOrder: integer('sort_order').notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
 	},
