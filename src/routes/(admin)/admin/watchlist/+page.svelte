@@ -245,7 +245,7 @@
 						name="direction"
 						value="up"
 						aria-label="move up"
-						class="text-mono rounded border border-[color:var(--color-border)] px-2 text-xs text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+						class="text-mono rounded border border-[color:var(--color-border)] px-3 py-2 text-xs text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
 					>
 						↑
 					</button>
@@ -253,7 +253,7 @@
 						name="direction"
 						value="down"
 						aria-label="move down"
-						class="text-mono rounded border border-[color:var(--color-border)] px-2 text-xs text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
+						class="text-mono rounded border border-[color:var(--color-border)] px-3 py-2 text-xs text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]"
 					>
 						↓
 					</button>
@@ -268,7 +268,7 @@
 				>
 					<input type="hidden" name="id" value={item.id} />
 					<button
-						class="text-mono rounded border border-[color:var(--color-border)] px-2 py-1 text-xs text-[color:var(--color-muted)] hover:border-[color:var(--color-danger)] hover:text-[color:var(--color-danger)]"
+						class="text-mono rounded border border-[color:var(--color-border)] px-2 py-2 text-xs text-[color:var(--color-muted)] hover:border-[color:var(--color-danger)] hover:text-[color:var(--color-danger)]"
 					>
 						remove
 					</button>

@@ -98,7 +98,7 @@
 
 	<div class="mt-10 grid gap-6 lg:grid-cols-2">
 		<section
-			class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
+			class="min-w-0 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
 		>
 			<div class="mb-4 flex items-baseline justify-between">
 				<h2
@@ -108,7 +108,7 @@
 				</h2>
 				<a
 					href="/admin/reviews"
-					class="text-mono text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-accent)]"
+					class="text-mono -m-2 p-2 text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-accent)]"
 				>
 					all →
 				</a>
@@ -146,7 +146,7 @@
 
 		{#if data.isAdmin}
 			<section
-				class="rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
+				class="min-w-0 rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-6"
 			>
 				<div class="mb-4 flex items-baseline justify-between">
 					<h2
@@ -156,7 +156,7 @@
 					</h2>
 					<a
 						href="/admin/suggestions"
-						class="text-mono text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-accent)]"
+						class="text-mono -m-2 p-2 text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-accent)]"
 					>
 						all →
 					</a>

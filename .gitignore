@@ -35,3 +35,6 @@ vite.config.ts.timestamp-*
 
 # claude code runtime
 .claude/scheduled_tasks.lock
+
+# generated mobile-audit evidence
+audit-shots/

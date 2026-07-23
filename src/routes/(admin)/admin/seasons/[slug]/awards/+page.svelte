@@ -411,7 +411,7 @@
 						{@const w = findWinner(cat, slot.rank)}
 						{@const key = `${cat.id}:${slot.rank}`}
 						<div
-							class="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-3"
+							class="min-w-0 rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-3"
 						>
 							<div
 								class="text-mono mb-2 flex items-center justify-between text-[0.65rem] tracking-wider text-[color:var(--color-muted)] uppercase"
@@ -454,7 +454,7 @@
 										<button
 											type="button"
 											onclick={() => (pickerKey = key)}
-											class="text-mono mt-1 text-[0.65rem] tracking-wider text-[color:var(--color-accent)] uppercase hover:text-[color:var(--color-text)]"
+											class="text-mono -mx-2 mt-1 -mb-2 p-2 text-[0.65rem] tracking-wider text-[color:var(--color-accent)] uppercase hover:text-[color:var(--color-text)]"
 											>swap</button
 										>
 									</div>
@@ -468,7 +468,7 @@
 										class="text-mono min-w-0 flex-1 rounded border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1 text-[0.7rem] outline-none focus:border-[color:var(--color-accent)]"
 									/>
 									<label
-										class="text-mono flex shrink-0 cursor-pointer items-center gap-1 text-[0.6rem] tracking-wider text-[color:var(--color-muted)] uppercase"
+										class="text-mono flex shrink-0 cursor-pointer items-center gap-1 py-2 text-[0.6rem] tracking-wider text-[color:var(--color-muted)] uppercase"
 									>
 										<input
 											type="checkbox"

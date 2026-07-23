@@ -24,7 +24,7 @@
 	onclick={open}
 	aria-label="how this is scored"
 	title="how this is scored"
-	class="text-mono inline-flex h-7 w-7 items-center justify-center self-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-sm leading-none text-[color:var(--color-muted)] transition hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"
+	class="text-mono relative inline-flex h-7 w-7 items-center justify-center self-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-sm leading-none text-[color:var(--color-muted)] transition before:absolute before:-inset-2 before:content-[''] hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"
 >
 	?
 </button>

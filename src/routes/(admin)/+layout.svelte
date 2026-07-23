@@ -43,7 +43,7 @@
 				</span>
 				<form method="POST" action="/logout">
 					<button
-						class="text-mono text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-text)]"
+						class="text-mono -m-2 p-2 text-[0.65rem] tracking-[0.3em] text-[color:var(--color-muted)] uppercase transition hover:text-[color:var(--color-text)]"
 						type="submit"
 					>
 						log out
@@ -52,14 +52,14 @@
 			</div>
 		</div>
 		<nav
-			class="mx-auto flex max-w-[72rem] scrollbar-none gap-6 overflow-x-auto px-6 pb-3 whitespace-nowrap"
+			class="mx-auto flex max-w-[72rem] scrollbar-none gap-6 overflow-x-auto px-6 pb-1 whitespace-nowrap"
 		>
 			{#each nav as item (item.href)}
 				{@const active =
 					current === item.href || (item.href !== '/admin' && current.startsWith(item.href))}
 				<a
 					href={item.href}
-					class="text-mono text-xs tracking-wider uppercase transition {active
+					class="text-mono py-2 text-xs tracking-wider uppercase transition {active
 						? 'text-[color:var(--color-accent)]'
 						: 'text-[color:var(--color-muted)] hover:text-[color:var(--color-text)]'}"
 				>

@@ -13,7 +13,7 @@
 		name="q"
 		bind:value={query}
 		placeholder="search tmdb (dune, severance, ...)"
-		class="text-mono flex-1 rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-4 py-3 outline-none focus:border-[color:var(--color-accent)]"
+		class="text-mono min-w-0 flex-1 rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-4 py-3 outline-none focus:border-[color:var(--color-accent)]"
 	/>
 	<button
 		class="text-mono rounded-md bg-[color:var(--color-accent)] px-5 py-3 text-sm tracking-wider text-[color:var(--color-bg)] uppercase"

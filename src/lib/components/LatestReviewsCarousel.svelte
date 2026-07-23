@@ -175,6 +175,13 @@
 	.dot {
 		width: 1.25rem;
 		background: color-mix(in oklab, var(--color-muted) 25%, transparent);
+		/* keep the dot small visually but give it a >=24px touch target */
+		position: relative;
+	}
+	.dot::before {
+		content: '';
+		position: absolute;
+		inset: -0.625rem -0.125rem;
 	}
 	.dot-active {
 		width: 2.25rem;

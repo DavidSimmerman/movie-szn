@@ -70,13 +70,13 @@
 						</span>
 						<a
 							href="/admin/reviews/new?movieSlug={r.slug}"
-							class="text-mono text-xs tracking-wider text-[color:var(--color-accent)] uppercase hover:text-[color:var(--color-text)]"
+							class="text-mono -m-2 p-2 text-xs tracking-wider whitespace-nowrap text-[color:var(--color-accent)] uppercase hover:text-[color:var(--color-text)]"
 						>
 							edit
 						</a>
 						<a
 							href="/reviews/{r.slug}"
-							class="text-mono text-xs tracking-wider text-[color:var(--color-muted)] uppercase hover:text-[color:var(--color-text)]"
+							class="text-mono -m-2 p-2 text-xs tracking-wider whitespace-nowrap text-[color:var(--color-muted)] uppercase hover:text-[color:var(--color-text)]"
 						>
 							view →
 						</a>
