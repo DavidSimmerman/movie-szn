@@ -17,7 +17,8 @@
 		{ href: '/reviewers', label: 'reviewers' },
 		{ href: '/watchlist', label: 'watchlist' },
 		{ href: '/suggest', label: 'suggest' },
-		{ href: '/seasons', label: 'seasons' }
+		{ href: '/seasons', label: 'seasons' },
+		{ href: '/lists', label: 'lists' }
 	];
 
 	const props: Props = $props();

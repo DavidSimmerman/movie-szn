@@ -9,9 +9,10 @@
 		slug: string;
 		posterUrl: string | null;
 		score: number | null;
+		rank?: number | null;
 	};
 
-	const { title, year, slug, posterUrl, score }: Props = $props();
+	const { title, year, slug, posterUrl, score, rank = null }: Props = $props();
 	const tier = $derived(score == null ? null : scoreTier(score));
 	const prefix = $derived(profilePrefix(page.url.pathname));
 </script>
@@ -20,6 +21,14 @@
 	href="{prefix}/reviews/{slug}"
 	class="group hover:shadow-bulb relative block aspect-[2/3] overflow-hidden rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] transition duration-200 hover:-translate-y-2"
 >
+	{#if rank != null}
+		<span
+			class="text-display absolute top-1 left-2.5 z-10 text-4xl leading-none font-semibold text-[color:var(--color-text)] [text-shadow:0_2px_12px_oklch(0%_0_0_/_0.8)]"
+			aria-hidden="true"
+		>
+			{rank}
+		</span>
+	{/if}
 	{#if posterUrl}
 		<img
 			src={posterUrl}

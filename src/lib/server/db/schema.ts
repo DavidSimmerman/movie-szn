@@ -31,6 +31,7 @@ export const suggestionStatus = pgEnum('suggestion_status', [
 	'declined'
 ]);
 export const awardRank = pgEnum('award_rank', ['first', 'second', 'third', 'honorable']);
+export const listOrderMode = pgEnum('list_order_mode', ['manual', 'rating']);
 
 export const users = pgTable('users', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -164,6 +165,40 @@ export const watchList = pgTable(
 	]
 );
 
+export const lists = pgTable(
+	'lists',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		slug: text('slug').notNull(),
+		name: text('name').notNull(),
+		description: text('description'),
+		orderMode: listOrderMode('order_mode').notNull().default('manual'),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [uniqueIndex('lists_user_slug_unique').on(t.userId, t.slug)]
+);
+
+export const listItems = pgTable(
+	'list_items',
+	{
+		listId: uuid('list_id')
+			.notNull()
+			.references(() => lists.id, { onDelete: 'cascade' }),
+		movieId: uuid('movie_id')
+			.notNull()
+			.references(() => movies.id, { onDelete: 'cascade' }),
+		position: integer('position').notNull(),
+		addedAt: timestamp('added_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [
+		primaryKey({ columns: [t.listId, t.movieId] }),
+		index('list_items_position_idx').on(t.listId, t.position)
+	]
+);
+
 export const suggestions = pgTable('suggestions', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	title: text('title').notNull(),
@@ -266,6 +301,9 @@ export type NewReview = typeof reviews.$inferInsert;
 export type Season = typeof seasons.$inferSelect;
 export type NewSeason = typeof seasons.$inferInsert;
 export type WatchListEntry = typeof watchList.$inferSelect;
+export type List = typeof lists.$inferSelect;
+export type NewList = typeof lists.$inferInsert;
+export type ListItem = typeof listItems.$inferSelect;
 export type Suggestion = typeof suggestions.$inferSelect;
 export type SuggestionVote = typeof suggestionVotes.$inferSelect;
 export type AwardCategory = typeof awardCategories.$inferSelect;

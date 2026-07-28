@@ -38,3 +38,6 @@ vite.config.ts.timestamp-*
 
 # generated mobile-audit evidence
 audit-shots/
+
+# in-repo worktrees
+.claude/worktrees/

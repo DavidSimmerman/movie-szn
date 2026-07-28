@@ -9,6 +9,7 @@
 		{ href: '/admin/reviews', label: 'reviews' },
 		{ href: '/admin/watchlist', label: 'watchlist' },
 		{ href: '/admin/seasons', label: 'seasons' },
+		{ href: '/admin/lists', label: 'lists' },
 		...(data.user.isAdmin
 			? [
 					{ href: '/admin/suggestions', label: 'suggestions' },
