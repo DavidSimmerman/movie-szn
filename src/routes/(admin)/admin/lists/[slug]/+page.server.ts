@@ -23,6 +23,11 @@ async function nextPosition(listId: string) {
 	return (row?.m ?? 0) + GAP;
 }
 
+// Bump the list's updatedAt so its cached OG image regenerates after any change.
+function touch(listId: string) {
+	return db!.update(lists).set({ updatedAt: new Date() }).where(eq(lists.id, listId));
+}
+
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!db) throw error(503);
 	if (!locals.user) throw error(401);
@@ -93,7 +98,8 @@ export const actions: Actions = {
 			.set({
 				name: parsed.data.name,
 				description: parsed.data.description || null,
-				orderMode: parsed.data.orderMode
+				orderMode: parsed.data.orderMode,
+				updatedAt: new Date()
 			})
 			.where(eq(lists.id, list.id));
 		return { ok: true };
@@ -122,6 +128,7 @@ export const actions: Actions = {
 				position: await nextPosition(list.id)
 			})
 			.onConflictDoNothing();
+		await touch(list.id);
 		return { ok: true };
 	},
 
@@ -136,6 +143,7 @@ export const actions: Actions = {
 		await db
 			.delete(listItems)
 			.where(and(eq(listItems.listId, list.id), eq(listItems.movieId, movieId)));
+		await touch(list.id);
 		return { ok: true };
 	},
 
@@ -169,6 +177,7 @@ export const actions: Actions = {
 					.where(and(eq(listItems.listId, list.id), eq(listItems.movieId, parsed.data[i])));
 			}
 		});
+		await touch(list.id);
 		return { ok: true };
 	},
 
@@ -215,6 +224,7 @@ export const actions: Actions = {
 				.set({ position: current.position })
 				.where(and(eq(listItems.listId, list.id), eq(listItems.movieId, swap.movieId)));
 		});
+		await touch(list.id);
 		return { ok: true };
 	}
 };

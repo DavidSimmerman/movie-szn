@@ -85,6 +85,13 @@
       "when": 1785204353474,
       "tag": "0011_movie_lists",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1785207341095,
+      "tag": "0012_lists_updated_at",
+      "breakpoints": true
     }
   ]
 }

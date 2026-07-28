@@ -176,7 +176,8 @@ export const lists = pgTable(
 		name: text('name').notNull(),
 		description: text('description'),
 		orderMode: listOrderMode('order_mode').notNull().default('manual'),
-		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 	},
 	(t) => [uniqueIndex('lists_user_slug_unique').on(t.userId, t.slug)]
 );
