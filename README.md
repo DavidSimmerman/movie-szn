@@ -76,14 +76,9 @@ without it `/authorize` refuses to issue tokens). Then in Claude → Settings �
 Add custom connector, URL `https://<your-host>/mcp`. Claude self-registers, sends you to
 the consent screen, you type that password, and it's connected.
 
-If the site sits behind Cloudflare Access (or any other edge auth), Claude's servers can't
-log in, so add a **Bypass** policy for the four machine-to-machine paths — `/mcp`,
-`/token`, `/register`, `/.well-known/*`. Each carries its own auth (a Bearer token, a
-single-use code + PKCE verifier, or nothing secret at all).
-
-`/authorize` is the one you open in a browser, so it can stay behind Access — you'll just
-sign in there before the consent screen. That's a second gate on the only page that accepts
-the password; leave it on unless the popup gives you trouble.
+If you ever put the site behind edge auth (Cloudflare Access and friends), bypass `/mcp`,
+`/token`, `/register` and `/.well-known/*` — Claude's servers can't sign in, and those four
+carry their own auth anyway.
 
 Verify the whole flow — registration, consent, PKCE exchange, tool call, and the requests
 that must be refused — against any deployment:
