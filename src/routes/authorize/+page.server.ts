@@ -32,8 +32,12 @@ function readParams(url: URL): OAuthParams {
 	};
 }
 
-// Bounce an OAuth error back to the client — only once the redirect_uri is
-// confirmed to be registered for that client.
+// Bounce an OAuth error back to the client. Registration is open, so a
+// registered redirect_uri proves nothing about who owns it — only ever redirect
+// AFTER the user has seen the consent screen and acted on it (i.e. deny).
+// Malformed requests are rendered here instead, so this can't be used as an open
+// redirect. Claude always sends response_type=code with an S256 challenge, so a
+// legitimate client never sees the difference.
 function errorRedirect(
 	redirectUri: string,
 	state: string,
@@ -70,16 +74,9 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 		throw error(503, 'Authorization is not configured (MCP_AUTH_PASSWORD unset).');
 	}
 
-	if (responseType !== 'code') {
-		errorRedirect(
-			params.redirectUri,
-			params.state,
-			'unsupported_response_type',
-			'only code is supported'
-		);
-	}
+	if (responseType !== 'code') throw error(400, 'unsupported response_type — only code');
 	if (!params.codeChallenge || params.codeChallengeMethod !== 'S256') {
-		errorRedirect(params.redirectUri, params.state, 'invalid_request', 'PKCE S256 required');
+		throw error(400, 'a PKCE S256 code_challenge is required');
 	}
 
 	// Registration is open to anyone, so client_name is an unverified claim and the
@@ -89,6 +86,9 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 		clientName: (await getClient(params.clientId))?.clientName?.slice(0, 60) ?? null,
 		redirectOrigin: new URL(params.redirectUri).origin,
 		expectedOrigin: CLAUDE_ORIGIN,
+		// The form posts to `?/authorize`, which would drop these query params —
+		// carry them so `load` can re-render the page with a form error.
+		search: url.search,
 		params
 	};
 };
@@ -124,7 +124,7 @@ export const actions: Actions = {
 		// Re-validate against the DB — never trust the hidden fields alone.
 		await validateClient(params.clientId, params.redirectUri);
 		if (!params.codeChallenge || params.codeChallengeMethod !== 'S256') {
-			errorRedirect(params.redirectUri, params.state, 'invalid_request', 'PKCE S256 required');
+			throw error(400, 'a PKCE S256 code_challenge is required');
 		}
 		if (!verifyConsentPassword(password)) {
 			return fail(401, { error: 'Incorrect password.' });

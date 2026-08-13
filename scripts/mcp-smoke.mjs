@@ -118,6 +118,33 @@ async function submitConsent(pw) {
 {
 	const res = await submitConsent('wrong-password');
 	check('wrong consent password is rejected', res.status === 401, `status ${res.status}`);
+	// Re-rendering must keep the OAuth request intact, or a mistyped password
+	// strands the user on a 400 instead of the form.
+	const html = await res.text();
+	check('a rejected password re-renders the consent form', html.includes('Incorrect password'));
+}
+
+// A malformed request must NOT bounce to the client's self-registered URI —
+// that would make the site an open redirect for anyone who can call /register.
+{
+	const bad = new URLSearchParams(authQuery);
+	bad.set('response_type', 'token');
+	const res = await fetch(`${base}/authorize?${bad}`, { redirect: 'manual' });
+	check(
+		'a bad response_type is rendered, not redirected',
+		res.status === 400,
+		`status ${res.status}`
+	);
+}
+{
+	const bad = new URLSearchParams(authQuery);
+	bad.delete('code_challenge');
+	const res = await fetch(`${base}/authorize?${bad}`, { redirect: 'manual' });
+	check(
+		'a missing PKCE challenge is rendered, not redirected',
+		res.status === 400,
+		`status ${res.status}`
+	);
 }
 
 const consent = await submitConsent(password);

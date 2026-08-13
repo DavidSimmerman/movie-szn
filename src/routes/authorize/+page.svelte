@@ -30,7 +30,7 @@
 
 	<form
 		method="POST"
-		action="?/authorize"
+		action="{data.search}&/authorize"
 		use:enhance={() => {
 			submitting = true;
 			return async ({ update }) => {
