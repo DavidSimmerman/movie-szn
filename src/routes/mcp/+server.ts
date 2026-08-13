@@ -29,7 +29,7 @@ const GET_LIBRARY_TOOL = {
 		'five category ratings (production, acting, storyPlot, intent, daveFactor), the derived ' +
 		'combinedScore, the written notes, when it was watched, which "movie season" it was tagged to, ' +
 		'and any season awards it won. Also returns the reviewers (with their bios), the season ' +
-		"calendar, and the current watchlist. Use it to understand the reviewer's taste — which " +
+		"calendar, the curated lists, and the current watchlist. Use it to understand the reviewer's taste — which " +
 		'categories they weight, what they rate highly, what they panned — and then recommend films ' +
 		'or shows they have NOT already reviewed or queued. Check `titles` and `watchlist` before ' +
 		'suggesting anything so you never recommend something already seen or lined up. Read ' +

@@ -223,6 +223,10 @@ check('valid exchange returns an access token', typeof tokens.access_token === '
 	);
 	check('watchlist is included', Array.isArray(payload.watchlist));
 	check(
+		'curated lists carry their titles',
+		Array.isArray(payload.lists) && payload.lists.every((l) => Array.isArray(l.titles))
+	);
+	check(
 		'awards are attached to titles',
 		payload.titles.every((t) => Array.isArray(t.awards))
 	);

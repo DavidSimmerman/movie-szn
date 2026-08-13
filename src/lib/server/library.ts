@@ -3,6 +3,8 @@ import { db } from '$server/db';
 import {
 	awardCategories,
 	awardWinners,
+	listItems,
+	lists,
 	movies,
 	movieSeasons,
 	reviews,
@@ -58,6 +60,14 @@ export type Library = {
 	reviewers: { username: string; name: string; isAdmin: boolean; bio: string | null }[];
 	seasons: { slug: string; name: string; startsAt: string; endsAt: string; owner: string }[];
 	titles: LibraryEntry[];
+	lists: {
+		slug: string;
+		name: string;
+		description: string | null;
+		orderMode: string;
+		owner: string;
+		titles: { slug: string; title: string; year: number }[];
+	}[];
 	watchlist: {
 		position: number;
 		title: string;
@@ -78,7 +88,7 @@ const num = (v: string | null) => (v == null ? null : Number(v));
 export async function buildLibrary(): Promise<Library> {
 	if (!db) throw new Error('DATABASE_URL is not set');
 
-	const [reviewerRows, seasonRows, reviewRows, seasonTagRows, awardRows, watchRows] =
+	const [reviewerRows, seasonRows, reviewRows, seasonTagRows, awardRows, watchRows, listRows] =
 		await Promise.all([
 			db
 				.select({
@@ -160,7 +170,26 @@ export async function buildLibrary(): Promise<Library> {
 				.from(watchList)
 				.innerJoin(movies, eq(movies.id, watchList.movieId))
 				.innerJoin(users, eq(users.id, watchList.userId))
-				.orderBy(asc(watchList.position))
+				.orderBy(asc(watchList.position)),
+			// Curated lists are pure taste signal — what got grouped with what, and
+			// under what name. A list can hold a title that was never reviewed.
+			db
+				.select({
+					listId: lists.id,
+					slug: lists.slug,
+					name: lists.name,
+					description: lists.description,
+					orderMode: lists.orderMode,
+					owner: users.username,
+					movieSlug: movies.slug,
+					movieTitle: movies.title,
+					movieYear: movies.year
+				})
+				.from(lists)
+				.innerJoin(users, eq(users.id, lists.userId))
+				.leftJoin(listItems, eq(listItems.listId, lists.id))
+				.leftJoin(movies, eq(movies.id, listItems.movieId))
+				.orderBy(desc(lists.updatedAt), asc(listItems.position))
 		]);
 
 	const seasonsByMovie = new Map<string, { slug: string; owner: string }[]>();
@@ -219,12 +248,33 @@ export async function buildLibrary(): Promise<Library> {
 		entry.awards.push(...(awardsByReview.get(r.reviewId) ?? []));
 	}
 
+	const listsBySlug = new Map<string, Library['lists'][number]>();
+	for (const r of listRows) {
+		let list = listsBySlug.get(r.listId);
+		if (!list) {
+			list = {
+				slug: r.slug,
+				name: r.name,
+				description: r.description,
+				orderMode: r.orderMode,
+				owner: r.owner,
+				titles: []
+			};
+			listsBySlug.set(r.listId, list);
+		}
+		// The left join yields one null-movie row for an empty list.
+		if (r.movieSlug) {
+			list.titles.push({ slug: r.movieSlug, title: r.movieTitle!, year: r.movieYear! });
+		}
+	}
+
 	return {
 		owner: reviewerRows.find((u) => u.isAdmin)?.username ?? reviewerRows[0]?.username ?? null,
 		ratingScale: RATING_SCALE,
 		reviewers: reviewerRows,
 		seasons: seasonRows,
 		titles: [...titles.values()],
+		lists: [...listsBySlug.values()],
 		watchlist: watchRows
 	};
 }
