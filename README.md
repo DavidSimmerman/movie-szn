@@ -37,6 +37,7 @@ Four category scores, each 0–5 with decimals. You can rate a category `6/5` wh
 - **Watch list** — Dave's ordered queue of what's coming up
 - **Suggestions** — public can submit a movie and upvote others
 - **Seasons** — tag movies to a movie season (April–end of August)
+- **MCP connector** — read-only access to the whole library for Claude, at `/mcp`
 
 ## Running locally
 
@@ -62,6 +63,36 @@ npm run dev            # open http://localhost:5173
 6. Deploy
 
 Migrations run automatically on container start via `scripts/migrate.js`.
+
+## MCP connector
+
+`/mcp` is a read-only MCP server exposing one tool, `get_library`, which dumps the whole
+library in a single call — every title with its five category ratings, notes, season tags
+and awards, plus the reviewers, the season calendar and the watch list. Point Claude at it
+and ask for recommendations.
+
+Set `MCP_AUTH_PASSWORD` (any strong passphrase — it's the consent-screen password, and
+without it `/authorize` refuses to issue tokens). Then in Claude → Settings → Connectors →
+Add custom connector, URL `https://<your-host>/mcp`. Claude self-registers, sends you to
+the consent screen, you type that password, and it's connected.
+
+If the site sits behind Cloudflare Access (or any other edge auth), add a **Bypass** policy
+for the paths that carry their own auth, or Claude will never reach them:
+`/mcp`, `/authorize`, `/token`, `/register`, `/.well-known/*`.
+
+Verify the whole flow — registration, consent, PKCE exchange, tool call, and the requests
+that must be refused — against any deployment:
+
+```bash
+MCP_AUTH_PASSWORD=... npm run mcp:smoke -- https://<your-host>
+```
+
+Access tokens last an hour and refresh silently; a refresh token unused for 90 days dies.
+To cut every connector off immediately (and clean up after a smoke run against prod):
+
+```sql
+DELETE FROM oauth_clients;   -- cascades to codes and tokens
+```
 
 ## See also
 

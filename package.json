@@ -22,7 +22,8 @@
 		"db:seed": "tsx scripts/seed.ts",
 		"db:up": "docker compose -f docker-compose.dev.yml up -d",
 		"db:down": "docker compose -f docker-compose.dev.yml down",
-		"hash-password": "node scripts/hash-password.js"
+		"hash-password": "node scripts/hash-password.js",
+		"mcp:smoke": "node scripts/mcp-smoke.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

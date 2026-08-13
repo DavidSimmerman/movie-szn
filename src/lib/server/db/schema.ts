@@ -283,6 +283,53 @@ export const sessions = pgTable('sessions', {
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
 });
 
+// Claude.ai self-registers as a public OAuth client (RFC 7591), then runs an
+// authorization-code + PKCE flow against /authorize and /token to reach /mcp.
+// Codes and tokens are stored as sha256 — the plaintext only ever leaves once.
+export const oauthClients = pgTable('oauth_clients', {
+	clientId: text('client_id').primaryKey(),
+	clientName: text('client_name'),
+	redirectUris: jsonb('redirect_uris').$type<string[]>().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+export const oauthCodes = pgTable(
+	'oauth_codes',
+	{
+		code: text('code').primaryKey(),
+		clientId: text('client_id')
+			.notNull()
+			.references(() => oauthClients.clientId, { onDelete: 'cascade' }),
+		redirectUri: text('redirect_uri').notNull(),
+		codeChallenge: text('code_challenge').notNull(),
+		codeChallengeMethod: text('code_challenge_method').notNull().default('S256'),
+		scope: text('scope'),
+		resource: text('resource'),
+		expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+		consumed: boolean('consumed').notNull().default(false),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [index('oauth_codes_expires_idx').on(t.expiresAt)]
+);
+
+export const oauthTokens = pgTable(
+	'oauth_tokens',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		accessTokenHash: text('access_token_hash').notNull().unique(),
+		refreshTokenHash: text('refresh_token_hash').unique(),
+		clientId: text('client_id')
+			.notNull()
+			.references(() => oauthClients.clientId, { onDelete: 'cascade' }),
+		scope: text('scope'),
+		resource: text('resource'),
+		accessExpiresAt: timestamp('access_expires_at', { withTimezone: true }).notNull(),
+		revoked: boolean('revoked').notNull().default(false),
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+	},
+	(t) => [index('oauth_tokens_refresh_idx').on(t.refreshTokenHash)]
+);
+
 export const rateLimits = pgTable(
 	'rate_limits',
 	{

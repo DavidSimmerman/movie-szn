@@ -36,7 +36,8 @@ Svelte 5 runes · SvelteKit · TS strict · Tailwind v4 (`@theme` in `src/app.cs
 - `src/lib/server/ratelimit.ts` — fixed hourly windows via UPSERT on `(bucket, window_start)`.
 - `src/lib/server/tmdb.ts` / `imdb.ts` — metadata fetchers. IMDB parses JSON-LD.
 - `src/lib/server/visitor.ts` — voter hash = `sha256(ipHash + vid cookie + AUTH_SECRET)`.
-- `src/hooks.server.ts` — sets `event.locals.admin` + `visitorId`, guards `/admin/*`.
+- `src/hooks.server.ts` — sets `event.locals.admin` + `visitorId`, guards `/admin/*`, serves the OAuth discovery documents, and re-implements SvelteKit's CSRF check (disabled in `svelte.config.js`) with `/token` exempt.
+- `src/routes/mcp/+server.ts` — read-only MCP server (one tool, `get_library`) for the Claude connector. `src/lib/server/library.ts` builds the payload; `src/lib/server/oauth.ts` + `/authorize`, `/token`, `/register` are the authorization server. Verify with `npm run mcp:smoke -- <origin>`.
 - `src/routes/(admin)/` — protected route group; the `(admin)/+layout.server.ts` enforces the session.
 - `src/app.css` — design tokens live here in `@theme`. No separate config file.
 - `scripts/migrate.js` — runs on container boot before the app starts.
@@ -94,7 +95,8 @@ Coolify watches the git repo, builds with the root `Dockerfile` (multi-stage, no
 ```
 DATABASE_URL, ORIGIN, PROTOCOL_HEADER=x-forwarded-proto,
 HOST_HEADER=x-forwarded-host, ADDRESS_HEADER=x-forwarded-for,
-ADMIN_PASSWORD_HASH, AUTH_SECRET, TMDB_API_KEY, LOG_LEVEL=info
+ADMIN_PASSWORD_HASH, AUTH_SECRET, TMDB_API_KEY, LOG_LEVEL=info,
+MCP_AUTH_PASSWORD
 ```
 
 **Coolify gotchas**: set the health check path to `/healthz` (default is `/`). Use a persistent volume for the Postgres service. Turn on scheduled PG backups in the UI. Mount a persistent volume at `/app/og-cache` so the Playwright-generated OG preview (`scripts/og-screenshot.js`, refreshed every 3h by `src/lib/server/og-schedule.ts`) survives restarts.

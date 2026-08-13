@@ -7,6 +7,11 @@ const config = {
 	},
 	kit: {
 		adapter: adapter(),
+		// /token takes the OAuth exchange as a cross-origin (sometimes Origin-less)
+		// form POST, which SvelteKit's built-in check always rejects. The check is
+		// re-implemented in hooks.server.ts, exempting only /token — whose security
+		// is the single-use code + PKCE verifier, not the Origin header.
+		csrf: { trustedOrigins: ['*'] },
 		alias: {
 			$db: 'src/lib/server/db',
 			$server: 'src/lib/server'
