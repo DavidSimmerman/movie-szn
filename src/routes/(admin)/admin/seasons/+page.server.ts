@@ -6,9 +6,11 @@ import { seasons } from '$db/schema';
 import { defaultSeasonBounds, defaultSeasonName, defaultSeasonSlug } from '$server/seasons';
 import type { Actions, PageServerLoad } from './$types';
 
+const nameSchema = z.string().trim().min(1, 'name cannot be empty').max(60, 'name is too long');
+
 const createSchema = z.object({
 	year: z.coerce.number().int().min(1900).max(2100),
-	name: z.string().nullish(),
+	name: z.string().trim().max(60, 'name is too long').nullish(),
 	startsAt: z.string().nullish(),
 	endsAt: z.string().nullish()
 });
@@ -52,6 +54,26 @@ export const actions: Actions = {
 				error: err instanceof Error ? err.message : 'failed to create season'
 			});
 		}
+	},
+
+	rename: async ({ request, locals }) => {
+		if (!db) return fail(503);
+		if (!locals.user) return fail(401);
+		const body = await request.formData();
+		const id = body.get('id');
+		if (typeof id !== 'string') return fail(400, { error: 'invalid input' });
+		const parsed = nameSchema.safeParse(body.get('name'));
+		if (!parsed.success) {
+			return fail(400, { error: parsed.error.issues[0]?.message ?? 'invalid input' });
+		}
+		// The slug is left alone so existing /seasons/<slug> links keep working.
+		const [updated] = await db
+			.update(seasons)
+			.set({ name: parsed.data })
+			.where(and(eq(seasons.id, id), eq(seasons.userId, locals.user.id)))
+			.returning({ id: seasons.id });
+		if (!updated) return fail(404, { error: 'no such season' });
+		return { ok: true };
 	},
 
 	remove: async ({ request, locals }) => {

@@ -19,7 +19,7 @@ const createSchema = z.object({
 
 const profileSchema = z.object({
 	userId: z.string().uuid(),
-	bio: z.string().trim().max(280).optional()
+	bio: z.string().trim().max(1000).optional()
 });
 
 /** Round to the nearest 0.5 and clamp into [0, 5]; NaN → 0. */

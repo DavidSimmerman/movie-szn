@@ -190,8 +190,8 @@
 									</span>
 									<textarea
 										name="bio"
-										rows="3"
-										maxlength="280"
+										rows="6"
+										maxlength="1000"
 										placeholder="a sentence or two about this reviewer"
 										class="{inputClass} mt-2 resize-y">{u.bio ?? ''}</textarea
 									>

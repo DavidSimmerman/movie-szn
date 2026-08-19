@@ -47,7 +47,7 @@
 				</summary>
 
 				<div
-					class="absolute right-0 z-20 mt-2 min-w-[14rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1.5 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)]"
+					class="fixed inset-x-4 z-30 mt-2 min-w-[14rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1.5 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)] sm:absolute sm:inset-x-auto sm:right-0"
 				>
 					{#each all as u (u.id)}
 						{@const active = current.id === u.id}
@@ -101,7 +101,7 @@
 					</summary>
 
 					<div
-						class="absolute right-0 z-20 mt-2 min-w-[14rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1.5 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)]"
+						class="fixed inset-x-4 z-30 mt-2 min-w-[14rem] rounded-[var(--radius-card)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] p-1.5 shadow-[0_20px_50px_-20px_oklch(0%_0_0_/_0.8)] sm:absolute sm:inset-x-auto sm:right-0"
 					>
 						{#each all as u (u.id)}
 							{@const active = current.id === u.id}

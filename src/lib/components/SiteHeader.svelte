@@ -57,7 +57,7 @@
 
 		<nav
 			aria-label="primary"
-			class="text-mono flex w-full items-center justify-between text-xs tracking-wider text-[color:var(--color-muted)] uppercase sm:w-auto sm:justify-end sm:gap-6"
+			class="text-mono flex w-full flex-wrap items-center gap-x-5 gap-y-2 text-xs tracking-wider text-[color:var(--color-muted)] uppercase sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-6"
 		>
 			{#each links as link (link.href)}
 				{@const active = isActive(link.href)}

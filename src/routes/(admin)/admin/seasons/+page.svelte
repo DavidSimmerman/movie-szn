@@ -63,12 +63,28 @@
 	<ul class="divide-y divide-[color:var(--color-border)]">
 		{#each data.seasons as s (s.id)}
 			<li class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
-				<div class="min-w-[12rem] flex-1">
-					<p class="text-display text-xl">{s.name}</p>
-					<p class="text-mono text-xs text-[color:var(--color-muted)]">
+				<form method="POST" action="?/rename" use:enhance class="min-w-[14rem] flex-1">
+					<input type="hidden" name="id" value={s.id} />
+					<div class="flex items-center gap-2">
+						<input
+							name="name"
+							value={s.name}
+							required
+							maxlength="60"
+							aria-label="season name"
+							class="text-display -mx-2 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-xl outline-none hover:border-[color:var(--color-border)] focus:border-[color:var(--color-accent)]"
+						/>
+						<button
+							type="submit"
+							class="text-mono shrink-0 rounded border border-[color:var(--color-border)] px-2 py-1 text-[0.65rem] tracking-[0.15em] text-[color:var(--color-muted)] uppercase transition hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"
+						>
+							rename
+						</button>
+					</div>
+					<p class="text-mono mt-1 text-xs text-[color:var(--color-muted)]">
 						{s.startsAt} → {s.endsAt} · /seasons/{s.slug}
 					</p>
-				</div>
+				</form>
 				<a
 					href="/admin/seasons/{s.slug}"
 					class="text-mono rounded border border-[color:var(--color-border)] px-3 py-1 text-xs tracking-wider text-[color:var(--color-muted)] uppercase hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent)]"

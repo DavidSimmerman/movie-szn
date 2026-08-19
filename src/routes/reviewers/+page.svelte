@@ -64,7 +64,9 @@
 						</a>
 
 						{#if r.bio}
-							<p class="mt-4 text-sm text-[color:var(--color-muted)]">{r.bio}</p>
+							<p class="mt-4 text-sm whitespace-pre-line text-[color:var(--color-muted)]">
+								{r.bio}
+							</p>
 						{/if}
 
 						{#if r.traits.length}
@@ -82,9 +84,10 @@
 											>
 												{t.label}
 											</span>
-											<span class="flex items-center gap-2">
+											<span class="flex shrink-0 items-center gap-2">
 												<StarRow value={t.stars} />
-												<span class="text-mono text-xs text-[color:var(--color-muted)]"
+												<span
+													class="text-mono w-11 text-right text-xs text-[color:var(--color-muted)] tabular-nums"
 													>{t.stars}/5</span
 												>
 											</span>
